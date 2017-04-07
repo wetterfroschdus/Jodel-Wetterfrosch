@@ -1,4 +1,5 @@
 # Jodel-Wetterfrosch 🐸
+[![Code Health](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master/landscape.svg?style=flat)](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master)
 
 ## Installation
 Clone the repository.
