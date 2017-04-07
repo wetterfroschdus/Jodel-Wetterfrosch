@@ -6,7 +6,9 @@ Clone the repository.
 git clone https://github.com/wetterfroschdus/Jodel-Wetterfrosch.git
 ```
 ### Setup
-Use create_account.py to generate the necessary data:
+- Get an [API Key from Weather Underground](https://www.wunderground.com/weather/api/d/pricing.html)
+- Install the [requirements](.#-Requirements)!
+- Use create_account.py to generate the necessary data:
 ```
 python create_account.py
 ```
