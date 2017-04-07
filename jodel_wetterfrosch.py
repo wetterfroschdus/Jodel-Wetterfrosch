@@ -138,7 +138,7 @@ chanceofrain = response_json['forecast']['simpleforecast']['forecastday'][0]['po
 conditions = response_json['forecast']['simpleforecast']['forecastday'][0]['conditions']
 
 WeatherEmoji = emojis[conditions_simplify(conditions)]
-logger.info('Weather is "{0}". Simplified Weather is {1}. Weather emoji is: {2}'.format(conditions,conditions_simplify(conditions),WeatherEmoji))
+logger.info('Weather is "%s". Simplified Weather is %s. Weather emoji is: %s' % (conditions,conditions_simplify(conditions),WeatherEmoji))
 
 if WeatherEmoji == "NOPE":
     raise Exception("Response for 'condition' from Weather Provider was '{0}'.\nNo Emoji specified for {1}.".format(conditions, conditions))
@@ -162,4 +162,4 @@ if not Post2[0]==200:
     if not Post[0]==200:
         raise Exception("Bot comment could not be sent!")
 
-logger.info("Posts sent. Post ID's are:\nWeather post: {0}\nBot comment: {1}".format(Post[1]["post_id"],Post2[1]["post_id"]))
+logger.info("Posts sent. Post ID's are:\nWeather post: %s\nBot comment: %s" % (Post[1]["post_id"],Post2[1]["post_id"]))
