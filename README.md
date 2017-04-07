@@ -1,5 +1,5 @@
 # Jodel-Wetterfrosch 🐸
-[![Code Health](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master/landscape.svg?style=flat)](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master)
+[![forthebadge](http://forthebadge.com/images/badges/fuck-it-ship-it.svg)](http://forthebadge.com) [![Code Health](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master/landscape.svg?style=flat)](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master)
 
 ## Installation
 Clone the repository.
