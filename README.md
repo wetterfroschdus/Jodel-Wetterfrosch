@@ -1,5 +1,5 @@
 # Jodel-Wetterfrosch 🐸
-[![forthebadge](http://forthebadge.com/images/badges/fuck-it-ship-it.svg)](http://forthebadge.com) [![Code Health](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master/landscape.svg?style=flat-square)](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master)[![Written in](https://img.shields.io/badge/Written%20in-python%203.6.1-blue.svg)[![Tested with](https://img.shields.io/badge/Tested%20with-python%203.6.1-blue.svg)
+[![forthebadge](http://forthebadge.com/images/badges/fuck-it-ship-it.svg)](http://forthebadge.com) [![Code Health](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master/landscape.svg?style=flat-square)](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master)
 
 ## Installation
 - Clone the repository.
