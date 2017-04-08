@@ -2,13 +2,16 @@
 [![forthebadge](http://forthebadge.com/images/badges/fuck-it-ship-it.svg)](http://forthebadge.com) [![Code Health](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master/landscape.svg?style=flat-square)](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master)
 
 ## Installation
-Clone the repository.
+- Clone the repository.
 ```
 git clone https://github.com/wetterfroschdus/Jodel-Wetterfrosch.git
 ```
+- Install the [requirements](./README.md#requirements)!
+```
+pip install multi_key_dict jodel_api
+```
 ### Setup
 - Get an [API Key from Weather Underground](https://www.wunderground.com/weather/api/d/pricing.html)
-- Install the [requirements](./README.md#requirements)!
 - Use create_account.py to generate the necessary data:
 ```
 python create_account.py
