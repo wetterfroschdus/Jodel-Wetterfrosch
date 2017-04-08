@@ -10,7 +10,7 @@ git clone https://github.com/wetterfroschdus/Jodel-Wetterfrosch.git
 ```
 pip install multi_key_dict jodel_api
 ```
-### Setup
+## Setup
 - Get an [API Key from Weather Underground](https://www.wunderground.com/weather/api/d/pricing.html)
 - Use create_account.py to generate the necessary data:
 ```
@@ -18,7 +18,7 @@ python create_account.py
 ```
 Now just follow the instructions.
 
-### Usage
+## Usage
 Use jodel_wetterfrosch.py to create a weather Jodel:
 ```
 python jodel_wetterfrosch.py
