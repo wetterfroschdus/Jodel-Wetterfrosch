@@ -5,7 +5,7 @@ import requests
 from operator import itemgetter
 
 class InputJodelAcc(object):
-    def __init__(self, lat=None, lng=None, city=None, access_token=None, expiration_date=None, refresh_token=None, distinct_id=None, device_uid=None, **kwargs):
+    def __init__(self, lat=None, lng=None, city=None, access_token=None, expiration_date=None, refresh_token=None, distinct_id=None, device_uid=None):
         self.access_token = access_token
         self.expiration_date = expiration_date
         self.refresh_token = refresh_token
