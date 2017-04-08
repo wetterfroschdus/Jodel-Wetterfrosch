@@ -122,11 +122,11 @@ aveWindDir = response_json['forecast']['simpleforecast']['forecastday'][0]['avew
 dirs = ["North", "South", "West", "East", "Variable"]
 dirs_s = ["N", "S", "W", "E", " "]
 
-for x in xrange(0,5):
+for x in range(0,5):
     if maxWindDir == dirs[x]:
         maxWindDir = dirs_s[x]
         break
-for x in xrange(0,5):
+for x in range(0,5):
     if aveWindDir == dirs[x]:
         aveWindDir = dirs_s[x]
         break
