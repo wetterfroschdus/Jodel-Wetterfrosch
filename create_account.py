@@ -5,7 +5,7 @@ import requests
 from operator import itemgetter
 
 class InputJodelAcc(object):
-    def __init__(self, lat, lng, city, access_token=None, expiration_date=None, refresh_token=None, distinct_id=None, device_uid=None, **kwargs):
+    def __init__(self, lat=None, lng=None, city=None, access_token=None, expiration_date=None, refresh_token=None, distinct_id=None, device_uid=None, **kwargs):
         self.access_token = access_token
         self.expiration_date = expiration_date
         self.refresh_token = refresh_token
@@ -23,7 +23,7 @@ class InputWeather(object):
 def y_n(question):
     answer = "k"
     x = 0
-    while not answer == "y" or answer =="n":
+    while not answer == "y" and not answer =="n":
         if x == 0:
             answer = input("%s (y/n)\n" % question)
             x = 1
@@ -58,7 +58,7 @@ def get_data_Jodel():
         device_uid = input("Device UID:\n")
         return InputJodelAcc(access_token=access_token, expiration_date=expiration_date, refresh_token=refresh_token, distinct_id=distinct_id, device_uid=device_uid,lat=Jodels_loc.lat,lng=Jodels_loc.lng,city=Jodels_loc.city)
     Jodel_account = create_account(Jodels_loc.lat, Jodels_loc.lng, Jodels_loc.city)
-    return InputJodelAcc(access_token=Jodel_account.access_token, expiration_date=Jodel_account.expiration_date, refresh_token=Jodel_account.refresh_token, distinct_id=distinct_id, device_uid=device_uid,lat=Jodels_loc.lat,lng=Jodels_loc.lng,city=Jodels_loc.city)
+    return InputJodelAcc(access_token=Jodel_account.access_token, expiration_date=Jodel_account.expiration_date, refresh_token=Jodel_account.refresh_token, distinct_id=Jodel_account.distinct_id, device_uid=Jodel_account.device_uid,lat=Jodels_loc.lat,lng=Jodels_loc.lng,city=Jodels_loc.city)
 
 def create_account(lat,lng,city):
     account = jodel_api.JodelAccount(lat=lat, lng=lng, city=city)
@@ -114,3 +114,4 @@ def check_weather(API_KEY, COUNTRY, CITY):
     raise Exception("Got invalid data from Weather Provider.\nData:%s" % response_json)
 
 write_data(create_data())
+print('Data has been successfully written. You can now use "jodel_wetterfrosch.py"')
