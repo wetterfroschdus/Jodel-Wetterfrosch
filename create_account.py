@@ -91,7 +91,7 @@ def check_weather(API_KEY, COUNTRY, CITY):
     response_json = response.json()
     if "location" in response_json:
         CITY_code = response_json["location"]["l"]
-        CITY_code = CITY_code[3:]
+        CITY_code = CITY_code[7:]
         return CITY_code
     
     if "error" in response_json["response"]:
