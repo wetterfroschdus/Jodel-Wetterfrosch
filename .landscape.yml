@@ -1,0 +1,3 @@
+pylint:
+  disable:
+    - invalid-encoded-data(W0512)
