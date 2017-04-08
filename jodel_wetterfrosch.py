@@ -1,6 +1,5 @@
 import requests
 import logging
-from past.builtins.misc import xrange
 from multi_key_dict import multi_key_dict
 import jodel_api
 import json
@@ -93,7 +92,7 @@ dayl_response_json = response.json()
 weekdays_short = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
 days = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"]
 
-for x in xrange(0,7):
+for x in range(0,7):
     if response_json['forecast']['simpleforecast']['forecastday'][0]['date']['weekday_short'] == weekdays_short[x]:
         day = days[x]
         break
