@@ -85,9 +85,9 @@ emojis["Freezing Drizzle","Freezing Rain","Small Hail","Ice Pellet Showers","Hai
 emojis["Freezing Fog"] = "❄🌫"
 emojis["Unknown"] = "NOPE"
 
-response = requests.get('https://api.wunderground.com/api/%s/forecast/q/%s.json' % (API_KEY, CITY))
+response = requests.get('https://api.wunderground.com/api/%s/forecast/q/zmw:%s.json' % (API_KEY, CITY))
 response_json = response.json()
-response = requests.get('https://api.wunderground.com/api/%s/astronomy/q/%s.json' % (API_KEY, CITY))
+response = requests.get('https://api.wunderground.com/api/%s/astronomy/q/zmw:%s.json' % (API_KEY, CITY))
 dayl_response_json = response.json()
 
 weekdays_short = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
