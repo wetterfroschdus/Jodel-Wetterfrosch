@@ -141,13 +141,17 @@ logger.info("PostData is:\n%s" % PostData)
 account = jodel_api.JodelAccount(lat=lat, lng=lng, city=city, access_token=access_token, expiration_date=expiration_date,refresh_token=refresh_token, distinct_id=distinct_id, device_uid=device_uid)
 refresh_access(account, lat, lng, city, API_KEY, CITY)
 
+time.sleep(5)
+
 Post = account.create_post(message=PostData, color="9EC41C")
 if not "post_id" in Post[1]:
     time.sleep(10)
     Post = account.create_post(message=PostData, color="9EC41C")
     if not "post_id" in Post[1]:
+        logging.info("Weather post could not be sent!\nRaising Exception")
         Exception("Weather post could not be sent!")
 logger.info("Post return data is: %s" % Post)
+
 time.sleep(2)
 
 Post2 = account.create_post(message="Quaaaaak!\nIch bin ein digitaler 🐸!\n\nWeitere Infos unter:\nWetterfroschdus.tk", ancestor=Post[1]["post_id"])
@@ -155,7 +159,7 @@ if not "post_id" in Post2[1] :
     time.sleep(10)
     Post2 = account.create_post(message="Quaaaaak!\nIch bin ein digitaler 🐸!\n\nWeitere Infos unter:\nWetterfroschdus.tk", ancestor="{0}".format(Post[1]["post_id"]))
     if not "post_id" in Post2[1] :
-        raise Exception("Bot comment could not be sent!")
+        logging.info("Bot comment could not be sent!")
 
 logger.info("Post2 return data is: %s" % Post)
 logger.info("Posts sent. Post ID's are:\nWeather post: %s\nBot comment: %s" % (Post[1]["post_id"],Post2[1]["post_id"]))
