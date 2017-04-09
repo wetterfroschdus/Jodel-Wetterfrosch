@@ -3,7 +3,6 @@ import logging
 from multi_key_dict import multi_key_dict
 import jodel_api
 import json
-import hashlib
 import time
 
 logging.basicConfig(level=logging.INFO, filename="jodel_wetterfrosch.log")
@@ -15,8 +14,6 @@ def write_data(file_data):
 
 def create_data(lat,lng,city,access_token,expiration_date,refresh_token,distinct_id,device_uid,API_KEY,CITY):
     file_data = {"lat":lat,"lng":lng,"city":city,"API_KEY":API_KEY,"CITY":CITY,"expiration_date":expiration_date,"distinct_id":distinct_id,"refresh_token":refresh_token,"device_uid":device_uid,"access_token":access_token}
-    chksm = hashlib.md5(str(file_data).encode("utf-8")).hexdigest()
-    file_data = {"lat":lat,"lng":lng,"city":city,"API_KEY":API_KEY,"CITY":CITY,"expiration_date":expiration_date,"distinct_id":distinct_id,"refresh_token":refresh_token,"device_uid":device_uid,"access_token":access_token,"chksm":chksm}
     return file_data
 
 def refresh_access(account, lat, lng, city, API_KEY, CITY):
