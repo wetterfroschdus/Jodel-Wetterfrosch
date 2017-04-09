@@ -150,7 +150,6 @@ if not "post_id" in Post[1]:
     if not "post_id" in Post[1]:
         logging.info("Weather post could not be sent!\nRaising Exception")
         Exception("Weather post could not be sent!")
-logger.info("Post return data is: %s" % Post)
 
 time.sleep(2)
 
@@ -160,6 +159,5 @@ if not "post_id" in Post2[1] :
     Post2 = account.create_post(message="Quaaaaak!\nIch bin ein digitaler 🐸!\n\nWeitere Infos unter:\nWetterfroschdus.tk", ancestor="{0}".format(Post[1]["post_id"]))
     if not "post_id" in Post2[1] :
         logging.info("Bot comment could not be sent!")
-
-logger.info("Post2 return data is: %s" % Post)
+        
 logger.info("Posts sent. Post ID's are:\nWeather post: %s\nBot comment: %s" % (Post[1]["post_id"],Post2[1]["post_id"]))
