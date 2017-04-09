@@ -56,7 +56,6 @@ lng = file_data["lng"]
 city = file_data["city"]
 API_KEY = file_data["API_KEY"]
 CITY = file_data["CITY"]
-chksm = file_data["chksm"]
 
 data_read = {"lat":lat,"lng":lng,"city":city,"API_KEY":API_KEY,"CITY":CITY,"expiration_date":expiration_date,"distinct_id":distinct_id,"refresh_token":refresh_token,"device_uid":device_uid,"access_token":access_token}
 
