@@ -145,7 +145,7 @@ logger.info("PostData is:\n%s" % PostData)
 
 account = jodel_api.JodelAccount(lat=lat, lng=lng, city=city, access_token=access_token, expiration_date=expiration_date,refresh_token=refresh_token, distinct_id=distinct_id, device_uid=device_uid)
 refresh_access(account, lat, lng, city, API_KEY, CITY)
-account.follow_channel("janzjeheimesachen")
+
 Post = account.create_post(message=PostData, color="9EC41C")
 if not "post_id" in Post[1]:
     time.sleep(10)
