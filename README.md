@@ -1,8 +1,6 @@
 # Jodel-Wetterfrosch 🐸
 [![forthebadge](http://forthebadge.com/images/badges/fuck-it-ship-it.svg)](https://forthebadge.com) [![Python](https://img.shields.io/badge/Python-%3E%3D3.0-blue.svg?style=flat-square)](https://shields.io/) [![Code Health](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master/landscape.svg?style=flat-square)](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master)
 
-# NOT WORKING CORRECTLY
-
 ## Installation
 - Clone the repository.
 ```
