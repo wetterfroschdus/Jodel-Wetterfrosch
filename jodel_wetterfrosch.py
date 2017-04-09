@@ -5,7 +5,6 @@ import jodel_api
 import json
 import hashlib
 import time
-import os
 
 logging.basicConfig(level=logging.INFO, filename="jodel_wetterfrosch.log")
 logger = logging.getLogger(__name__)
