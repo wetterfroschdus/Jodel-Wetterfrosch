@@ -7,7 +7,6 @@ import hashlib
 import time
 import os
 
-os.chdir("/home/osmc/Jodel-Wetterfrosch")
 logging.basicConfig(level=logging.INFO, filename="jodel_wetterfrosch.log")
 logger = logging.getLogger(__name__)
 
@@ -64,9 +63,6 @@ CITY = file_data["CITY"]
 chksm = file_data["chksm"]
 
 data_read = {"lat":lat,"lng":lng,"city":city,"API_KEY":API_KEY,"CITY":CITY,"expiration_date":expiration_date,"distinct_id":distinct_id,"refresh_token":refresh_token,"device_uid":device_uid,"access_token":access_token}
-
-#if not chksm == hashlib.md5(str(data_read).encode("utf-8")).hexdigest():
-#    raise Exception("Account Data has been corrupted or manually edited.")
 
 emojis = multi_key_dict()
 emojis["Clear"] = "🌞"
@@ -150,10 +146,10 @@ logger.info("PostData is:\n%s" % PostData)
 account = jodel_api.JodelAccount(lat=lat, lng=lng, city=city, access_token=access_token, expiration_date=expiration_date,refresh_token=refresh_token, distinct_id=distinct_id, device_uid=device_uid)
 refresh_access(account, lat, lng, city, API_KEY, CITY)
 account.follow_channel("janzjeheimesachen")
-Post = account.create_post(message=PostData, color="9EC41C",channel="janzjeheimesachen")
+Post = account.create_post(message=PostData, color="9EC41C")
 if not "post_id" in Post[1]:
     time.sleep(10)
-    Post = account.create_post(message=PostData, color="9EC41C",channel="janzjeheimesachen")
+    Post = account.create_post(message=PostData, color="9EC41C")
     if not "post_id" in Post[1]:
         Exception("Weather post could not be sent!")
 logger.info("Post return data is: %s" % Post)
