@@ -1,6 +1,5 @@
 import requests
 import logging
-from multi_key_dict import multi_key_dict
 import jodel_api
 import json
 import time
@@ -8,12 +7,36 @@ import time
 logging.basicConfig(level=logging.INFO, filename="jodel_wetterfrosch.log")
 logger = logging.getLogger(__name__)
 
+class DataRead(object):
+    def __init__(self, lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY):
+        self.expiration_date = expiration_date
+        self.distinct_id = distinct_id
+        self.refresh_token = refresh_token
+        self.device_uid = device_uid
+        self.access_token = access_token
+        self.lat = lat
+        self.lng = lng
+        self.city = city
+        self.API_KEY = API_KEY
+        self.CITY = CITY
+
 def write_data(file_data):
     with open('account.json', 'w') as outfile:
         json.dump(file_data, outfile, indent=4)
 
-def create_data(lat,lng,city,access_token,expiration_date,refresh_token,distinct_id,device_uid,API_KEY,CITY):
-    file_data = {"lat":lat,"lng":lng,"city":city,"API_KEY":API_KEY,"CITY":CITY,"expiration_date":expiration_date,"distinct_id":distinct_id,"refresh_token":refresh_token,"device_uid":device_uid,"access_token":access_token}
+def create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY):
+    file_data = {
+        "lat":lat,
+        "lng":lng,
+        "city":city,
+        "API_KEY":API_KEY,
+        "CITY":CITY,
+        "expiration_date":expiration_date,
+        "distinct_id":distinct_id,
+        "refresh_token":refresh_token,
+        "device_uid":device_uid,
+        "access_token":access_token
+        }
     return file_data
 
 def refresh_access(account, lat, lng, city, API_KEY, CITY):
@@ -26,60 +49,48 @@ def refresh_access(account, lat, lng, city, API_KEY, CITY):
     access_token = refreshed_account["access_token"]
     write_data(create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY))
 
-def conditions_simplify(weather):
-    if "Fog" in weather:
-        if weather == "Freezing Fog":
-            return weather
-        else:
-            return "Fog"
-    elif "Dust" in weather:
-        return "Dust"
-    elif "Sand" in weather:
-        return "Sand"
-    elif "Unknown" in weather:
-        return "Unknown"
-    elif "Light" in weather or "Heavy" in weather:
-        return weather[5:]
-    elif weather:
-        return weather
+def read_data():
+    with open('account.json', 'r') as infile:
+        file_data = json.load(infile)
+        
+    expiration_date = file_data["expiration_date"]
+    distinct_id = file_data["distinct_id"]
+    refresh_token = file_data["refresh_token"]
+    device_uid = file_data["device_uid"]
+    access_token = file_data["access_token"]
+    lat = file_data["lat"]
+    lng = file_data["lng"]
+    city = file_data["city"]
+    API_KEY = file_data["API_KEY"]
+    CITY = file_data["CITY"]
+    return DataRead(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY)
 
-with open('account.json', 'r') as infile:
-    file_data = json.load(infile)
+data = read_data()
 
-expiration_date = file_data["expiration_date"]
-distinct_id = file_data["distinct_id"]
-refresh_token = file_data["refresh_token"]
-device_uid = file_data["device_uid"]
-access_token = file_data["access_token"]
-lat = file_data["lat"]
-lng = file_data["lng"]
-city = file_data["city"]
-API_KEY = file_data["API_KEY"]
-CITY = file_data["CITY"]
+emojis = {}
+emojis["clear"] = "🌞"
+emojis["sunny"] = "🌞"
+emojis["hazy"] = "🌫🌞"
+emojis["fog"] = "🌫"
+emojis["cloudy"] = "☁"
+emojis["partlycloudy"] = "⛅"
+emojis["partlysunny"] = "⛅"
+emojis["mostlysunny"] = "🌤"
+emojis["mostlycloudy"] = "🌥"
+emojis["chancerain"] = "🌦"
+emojis["rain"] = "🌧"
+emojis["flurries"] = "🌨"
+emojis["snow"] = "🌨"
+emojis["chancesnow"] = "eventuell 🌨"
+emojis["chanceflurries"] = "eventuell 🌨"
+emojis["tstorms"] = "⛈"
+emojis["chancetstorms"] = "eventuell ⛈"
+emojis["sleet"] = "❄🌧"
+emojis["chancesleet"] = "eventuell ❄🌧"
 
-data_read = {"lat":lat,"lng":lng,"city":city,"API_KEY":API_KEY,"CITY":CITY,"expiration_date":expiration_date,"distinct_id":distinct_id,"refresh_token":refresh_token,"device_uid":device_uid,"access_token":access_token}
-
-emojis = multi_key_dict()
-emojis["Clear"] = "🌞"
-emojis["Squalls"] = "💨"
-emojis["Mist","Fog","Smoke","Volcanic Ash","Dust","Sand","Haze"] = "🌫"
-emojis["Overcast"] = "☁"
-emojis["Funnel Cloud"] = "🌪"
-emojis["Partly Cloudy"] = "⛅"
-emojis["Scattered Clouds"] = "🌤"
-emojis["Mostly Cloudy"] = "🌥"
-emojis["Rain Showers"] = "🌦"
-emojis["Rain","Drizzle","Rain Mist","Spray"] = "🌧"
-emojis["Snow","Snow Grains","Low Drifting Snow","Blowing Snow","Snow Blowing Snow Mist","Snow Showers"] = "🌨"
-emojis["Thunderstorm"] = "🌩"
-emojis["Thunderstorms and Rain","Thunderstorms and Snow","Thunderstorms and Ice Pellets","Thunderstorms with Hail","Thunderstorms with Small Hail"] = "⛈"
-emojis["Freezing Drizzle","Freezing Rain","Small Hail","Ice Pellet Showers","Hail Showers","Small Hail Showers","Hail","Ice Crystals","Ice Pellets"] = "❄🌧"
-emojis["Freezing Fog"] = "❄🌫"
-emojis["Unknown"] = "NOPE"
-
-response = requests.get('https://api.wunderground.com/api/%s/forecast/q/zmw:%s.json' % (API_KEY, CITY))
+response = requests.get('https://api.wunderground.com/api/%s/forecast/q/zmw:%s.json' % (data.API_KEY, data.CITY))
 response_json = response.json()
-response = requests.get('https://api.wunderground.com/api/%s/astronomy/q/zmw:%s.json' % (API_KEY, CITY))
+response = requests.get('https://api.wunderground.com/api/%s/astronomy/q/zmw:%s.json' % (data.API_KEY, data.CITY))
 dayl_response_json = response.json()
 
 weekdays_short = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
@@ -127,37 +138,46 @@ for x in range(0,5):
 aveHumidity = response_json['forecast']['simpleforecast']['forecastday'][0]['avehumidity']
 chanceofrain = response_json['forecast']['simpleforecast']['forecastday'][0]['pop']
 
-conditions = response_json['forecast']['simpleforecast']['forecastday'][0]['conditions']
+conditions = response_json['forecast']['simpleforecast']['forecastday'][0]['icon']
 
-WeatherEmoji = emojis[conditions_simplify(conditions)]
-logger.info('Weather is "%s". Simplified Weather is %s. Weather emoji is: %s' % (conditions,conditions_simplify(conditions),WeatherEmoji))
+WeatherEmoji = emojis[conditions]
+logger.info('Weather is "%s". Weather emoji is: %s' % (conditions,WeatherEmoji))
 
-if WeatherEmoji == "NOPE":
-    raise Exception("Response for 'condition' from Weather Provider was '{0}'.\nNo Emoji specified for {1}.".format(conditions, conditions))
-
-PostData = "++++Wetterjodel++++\nGuten Morgen! Am heutigen {0}, den {1} wirds {2}!\n📈 {3}°C     📉 {4}°C\n🌄 {5}     🌅 {6}\n☔ {7}%     💦 {8}%\n🌬 {9} {10} km/h\n💨 {11} {12} km/h\nEuer #Wetter🐸".format(day, date, WeatherEmoji, highTemp, lowTemp, sunrise, sunset, chanceofrain, aveHumidity, aveWindDir, aveWind, maxWindDir, maxWind)
+PostData = "++++Wetterjodel++++\nGuten Morgen! Am heutigen {0}, den {1} gibts {2}!\n📈 {3}°C     📉 {4}°C\n🌄 {5}     🌅 {6}\n☔ {7}%     💦 {8}%\n🌬 {9} {10} km/h\n💨 {11} {12} km/h\nEuer #Wetter🐸".format(day, date, WeatherEmoji, highTemp, lowTemp, sunrise, sunset, chanceofrain, aveHumidity, aveWindDir, aveWind, maxWindDir, maxWind)
 logger.info("PostData is:\n%s" % PostData)
 
-account = jodel_api.JodelAccount(lat=lat, lng=lng, city=city, access_token=access_token, expiration_date=expiration_date,refresh_token=refresh_token, distinct_id=distinct_id, device_uid=device_uid)
-refresh_access(account, lat, lng, city, API_KEY, CITY)
+account = jodel_api.JodelAccount(
+    lat = data.lat,
+    lng = data.lng,
+    city = data.city,
+    access_token = data.access_token,
+    expiration_date = data.expiration_date,
+    refresh_token = data.refresh_token,
+    distinct_id = data.distinct_id,
+    device_uid = data.device_uid)
+
+refresh_access(account, data.lat, data.lng, data.city, data.API_KEY, data.CITY)
+
+time.sleep(5)
 
 time.sleep(5)
 
 Post = account.create_post(message=PostData, color="9EC41C")
-if not "post_id" in Post[1]:
+if "post_id" not in Post[1]:
     time.sleep(10)
     Post = account.create_post(message=PostData, color="9EC41C")
-    if not "post_id" in Post[1]:
+    if "post_id" not in Post[1] :
         logger.info("Weather post could not be sent!\nRaising Exception")
-        Exception("Weather post could not be sent!")
+        raise Exception("Weather post could not be sent!")
 
 time.sleep(2)
 
 Post2 = account.create_post(message="Quaaaaak!\nIch bin ein digitaler 🐸!\n\nWeitere Infos unter:\njodel-wetterfrosch.tk", ancestor=Post[1]["post_id"])
-if not "post_id" in Post2[1] :
+if "post_id" not  in Post2[1] :
     time.sleep(10)
-    Post2 = account.create_post(message="Quaaaaak!\nIch bin ein digitaler 🐸!\n\nWeitere Infos unter:\njodel-wetterfrosch.tk", ancestor="{0}".format(Post[1]["post_id"]))
-    if not "post_id" in Post2[1] :
-        logger.info("Bot comment could not be sent!")
+    Post2 = account.create_post(message="Quaaaaak!\nIch bin ein digitaler 🐸!\n\nWeitere Infos unter:\njodel-wetterfrosch.tk", ancestor=Post[1]["post_id"])
+    if "post_id" not  in Post2[1] :
+        logger.info("Bot comment could not be sent!\nRaising Exception")
+        raise Exception("Bot comment could not be sent!")
         
-logger.info("Posts sent. Post ID's are:\nWeather post: %s\nBot comment: %s" % (Post[1]["post_id"],Post2[1]["post_id"]))
+logger.info("Posts sent. Post ID's are:\nWeather post: %s\nBot comment: %s"% (Post[1]["post_id"], Post2[1]["post_id"]))
