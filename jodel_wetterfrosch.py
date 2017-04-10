@@ -153,10 +153,10 @@ if not "post_id" in Post[1]:
 
 time.sleep(2)
 
-Post2 = account.create_post(message="Quaaaaak!\nIch bin ein digitaler 🐸!\n\nWeitere Infos unter:\nWetterfroschdus.tk", ancestor=Post[1]["post_id"])
+Post2 = account.create_post(message="Quaaaaak!\nIch bin ein digitaler 🐸!\n\nWeitere Infos unter:\njodel-wetterfrosch.tk", ancestor=Post[1]["post_id"])
 if not "post_id" in Post2[1] :
     time.sleep(10)
-    Post2 = account.create_post(message="Quaaaaak!\nIch bin ein digitaler 🐸!\n\nWeitere Infos unter:\nWetterfroschdus.tk", ancestor="{0}".format(Post[1]["post_id"]))
+    Post2 = account.create_post(message="Quaaaaak!\nIch bin ein digitaler 🐸!\n\nWeitere Infos unter:\njodel-wetterfrosch.tk", ancestor="{0}".format(Post[1]["post_id"]))
     if not "post_id" in Post2[1] :
         logging.info("Bot comment could not be sent!")
         
