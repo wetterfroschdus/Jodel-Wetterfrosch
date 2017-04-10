@@ -81,12 +81,12 @@ emojis["chancerain"] = "🌦"
 emojis["rain"] = "🌧"
 emojis["flurries"] = "🌨"
 emojis["snow"] = "🌨"
-emojis["chancesnow"] = "eventuell 🌨"
-emojis["chanceflurries"] = "eventuell 🌨"
+emojis["chancesnow"] = "vielleicht 🌨"
+emojis["chanceflurries"] = "vielleicht 🌨"
 emojis["tstorms"] = "⛈"
-emojis["chancetstorms"] = "eventuell ⛈"
+emojis["chancetstorms"] = "vielleicht ⛈"
 emojis["sleet"] = "❄🌧"
-emojis["chancesleet"] = "eventuell ❄🌧"
+emojis["chancesleet"] = "vielleicht ❄🌧"
 
 response = requests.get('https://api.wunderground.com/api/%s/forecast/q/zmw:%s.json' % (data.API_KEY, data.CITY))
 response_json = response.json()
