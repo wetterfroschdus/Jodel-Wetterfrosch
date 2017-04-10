@@ -41,7 +41,17 @@ def write_data(file_data):
 def create_data():
     data_weather = get_data_Weather()
     data_jodel = get_data_Jodel()
-    file_data = {"lat":data_jodel.lat,"lng":data_jodel.lng,"city":data_jodel.city,"API_KEY":data_weather.API_KEY,"CITY":data_weather.CITY,"expiration_date":data_jodel.expiration_date,"distinct_id":data_jodel.distinct_id,"refresh_token":data_jodel.refresh_token,"device_uid":data_jodel.device_uid,"access_token":data_jodel.access_token}
+    file_data = {
+        "lat":data_jodel.lat,
+        "lng":data_jodel.lng,
+        "city":data_jodel.city,
+        "API_KEY":data_weather.API_KEY,
+        "CITY":data_weather.CITY,
+        "expiration_date":data_jodel.expiration_date,
+        "distinct_id":data_jodel.distinct_id,
+        "refresh_token":data_jodel.refresh_token,
+        "device_uid":data_jodel.device_uid,
+        "access_token":data_jodel.access_token}
     return file_data
 
 def get_data_Jodel():
