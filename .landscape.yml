@@ -2,4 +2,5 @@ pylint:
   disable:
     - invalid-encoded-data
 python-targets:
+  - 2
   - 3
