@@ -60,7 +60,7 @@ def get_data_Jodel():
     if y_n("Do you already have data for a valid Jodel account?"):
         print("Input the data for your Jodel account:\n")
         access_token = input("Access Token:\n")
-        expiration_date = input("Expiration Date:\n")
+        expiration_date = int(input("Expiration Date:\n"))
         refresh_token = input("Refresh Token:\n")
         distinct_id = input("Distinct ID:\n")
         device_uid = input("Device UID:\n")
