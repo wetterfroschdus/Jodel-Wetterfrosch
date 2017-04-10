@@ -2,6 +2,7 @@ import json
 import jodel_api
 import requests
 from operator import itemgetter
+from builtins import input
 
 class InputJodelAcc(object):
     def __init__(self, lat=None, lng=None, city=None, access_token=None, expiration_date=None, refresh_token=None, distinct_id=None, device_uid=None):
