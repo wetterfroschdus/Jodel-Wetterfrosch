@@ -18,10 +18,10 @@ class InputJodelAcc(object):
 class InputWeather(object):
     def __init__(self, API_KEY, CITY_code):
         self.API_KEY = API_KEY
-        self.CITY = CITY_code  
+        self.CITY = CITY_code
 
 def y_n(question):
-    answer = "k"
+    answer = ""
     x = 0
     while not answer == "y" and not answer =="n":
         if x == 0:
@@ -82,16 +82,17 @@ def get_Jodels_loc():
     return InputJodelAcc(lat=lat,lng=lng,city=city)
 
 def get_data_Weather():
-    print("Input the data for the weather API.\n")
-    API_KEY = input("API Key:\n")
-    COUNTRY = input("Country:\n")
-    CITY = input("City:\n")
     while True:
+        print("Input the data for the weather API.\n")
+        API_KEY = input("API Key:\n")
+        COUNTRY = input("Country:\n")
+        CITY = input("City:\n")
         CITY_code = check_weather(API_KEY,COUNTRY, CITY)
         if CITY_code == False:
             if y_n("Retry?") == False:
                 raise Exception("User abort on Weather Data select.")
-        break
+        else:
+            break                
     return InputWeather(API_KEY, CITY_code)
 
 def check_weather(API_KEY, COUNTRY, CITY):
