@@ -4,7 +4,7 @@ import jodel_api
 import json
 import time
 
-logging.basicConfig(level=logging.INFO, filename="jodel_wetterfrosch.log")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s    %(message)s', filename="jodel_wetterfrosch.log")
 logger = logging.getLogger(__name__)
 
 class DataRead(object):
@@ -180,4 +180,4 @@ if "post_id" not  in Post2[1] :
         logger.info("Bot comment could not be sent!\nRaising Exception")
         raise Exception("Bot comment could not be sent!")
         
-logger.info("Posts sent. Post ID's are:\nWeather post: %s\nBot comment: %s"% (Post[1]["post_id"], Post2[1]["post_id"]))
+logger.info("Posts sent. Post ID's are:     Weather post: %s     Bot comment: %s"% (Post[1]["post_id"], Post2[1]["post_id"]))
