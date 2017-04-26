@@ -160,8 +160,6 @@ refresh_access(account, data.lat, data.lng, data.city, data.API_KEY, data.CITY)
 
 time.sleep(5)
 
-time.sleep(5)
-
 Post = account.create_post(message=PostData, color="9EC41C")
 if "post_id" not in Post[1]:
     time.sleep(10)
