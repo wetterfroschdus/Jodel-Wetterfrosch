@@ -144,10 +144,10 @@ chanceofrain = response_json['forecast']['simpleforecast']['forecastday'][0]['po
 conditions = response_json['forecast']['simpleforecast']['forecastday'][0]['icon']
 
 WeatherEmoji = emojis[conditions]
-logger.info('Weather is "%s". Weather emoji is: %s' % (conditions,WeatherEmoji))
+logger.info('Weather is "%s". Weather emoji is: %s', conditions, WeatherEmoji)
 
 PostData = "++++Wetterjodel++++\nGuten Morgen! Am heutigen {0}, den {1} gibts {2}!\n📈 {3}°C     📉 {4}°C\n🌄 {5}     🌅 {6}\n☔ {7}%     💦 {8}%\n🌬 {9} {10} km/h\n💨 {11} {12} km/h\nEuer #Wetter🐸".format(day, date, WeatherEmoji, highTemp, lowTemp, sunrise, sunset, chanceofrain, aveHumidity, aveWindDir, aveWind, maxWindDir, maxWind)
-logger.info("PostData is:\n%s" % PostData.encode(encoding='utf_8', errors='replace'))
+logger.info("PostData is:\n%s", PostData.encode(encoding='utf_8', errors='replace'))
 
 account = jodel_api.JodelAccount(
     lat = data.lat,
@@ -181,4 +181,4 @@ if "post_id" not  in Post2[1] :
         logger.info("Bot comment could not be sent!\nRaising Exception")
         raise Exception("Bot comment could not be sent!")
         
-logger.info("Posts sent. Post ID's are:     Weather post: %s     Bot comment: %s"% (Post[1]["post_id"], Post2[1]["post_id"]))
+logger.info("Posts sent. Post ID's are:     Weather post: %s     Bot comment: %s", Post[1]["post_id"], Post2[1]["post_id"])
