@@ -8,10 +8,14 @@ import json
 import time
 from ftplib import FTP
 import xmltodict
-
+import argparse
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s    %(message)s', filename="jodel_wetterfrosch.log")
 logger = logging.getLogger(__name__)
+
+parser = argparse.ArgumentParser(description="A script to create weather posts for Jodel.\nTo create a Jodel, supply an account.")
+parser.add_argument("-a","--account", metavar="ACCOUNT_FILE.json", default="account.json")
+args = parser.parse_args()
 
 class DataRead(object):
     legacy = True
@@ -62,8 +66,8 @@ def refresh_access(account, lat, lng, city, API_KEY, CITY, legacy, dwdname, dwdp
     access_token = refreshed_account["access_token"]
     write_data(create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY, legacy, dwdname, dwdpass))
 
-def read_data():
-    with open('account.json', 'r') as infile:
+def read_data(filename):
+    with open(filename, 'r') as infile:
         file_data = json.load(infile)
         
     expiration_date = file_data["expiration_date"]
@@ -86,7 +90,7 @@ def convert(xml_file, xml_attribs=True):
         d = xmltodict.parse(f, xml_attribs=xml_attribs)
         return d
 
-data = read_data()
+data = read_data(args.account)
 
 emojis = {}
 emojis["clear"] = "🌞"
@@ -236,7 +240,8 @@ account = jodel_api.JodelAccount(
     is_legacy= data.legacy)
 
 refresh_access(account, data.lat, data.lng, data.city, data.API_KEY, data.CITY, data.legacy, data.dwdname, data.dwdpass)
-
+print("läuft")
+'''
 time.sleep(5)
 
 Post = account.create_post(message=PostData, color="9EC41C")
@@ -258,3 +263,4 @@ if "post_id" not  in Post2[1] :
         raise Exception("Pollen comment could not be sent!")
        
 logger.info("Posts sent. Post ID's are:     Weather post: %s     Pollen comment: %s", Post[1]["post_id"], Post2[1]["post_id"])
+'''
