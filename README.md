@@ -1,7 +1,8 @@
 # Jodel-Wetterfrosch 🐸
 [![forthebadge](http://forthebadge.com/images/badges/fuck-it-ship-it.svg)](https://forthebadge.com) [![Code Health](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master/landscape.svg?style=flat-square)](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master)
 
-## [If you updated from a previous version, please read!](./README.md#update)
+**[If you updated from a previous version, please read!](./README.md#update)**
+
 
 ## Installation
 - Clone the repository.
