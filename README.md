@@ -30,22 +30,20 @@ python jodel_wetterfrosch.py
 ## Requirement
 - [jodel_api](https://github.com/nborrmann/jodel_api/)
 
-## Weather Data Provider
-<a href="https://www.wunderground.com/" target="_blank"><img src="https://icons.wxug.com/logos/PNG/wundergroundLogo_4c_horz.png" 
-alt="Weather Underground Logo" height="60" border="0" /></a>
 
-## Pollen Data Provider
-<a href="https://www.dwd.de"><img src="https://upload.wikimedia.org/wikipedia/de/thumb/7/7b/DWD-Logo_2013.svg/800px-DWD-Logo_2013.svg.png" 
-alt="DWD Logo" height="70" border="10" /></a>
-
-
-
-
-
-
-
-
-### Update
+## Update
 The update changed the structure of account.json.
 Please backup your existing account.json and run create_account.py again.
 You will be able to use the data from your backed up account.
+
+
+
+
+
+### Weather Data Provider
+<a href="https://www.wunderground.com/" target="_blank"><img src="https://icons.wxug.com/logos/PNG/wundergroundLogo_4c_horz.png" 
+alt="Weather Underground Logo" height="60" border="0" /></a>
+
+### Pollen Data Provider
+<a href="https://www.dwd.de"><img src="https://upload.wikimedia.org/wikipedia/de/thumb/7/7b/DWD-Logo_2013.svg/800px-DWD-Logo_2013.svg.png" 
+alt="DWD Logo" height="70" border="10" /></a>
