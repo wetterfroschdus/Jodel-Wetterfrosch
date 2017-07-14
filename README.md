@@ -46,6 +46,6 @@ alt="DWD Logo" height="70" border="10" /></a>
 
 
 ### Update
-The update changed the structure of account.json
+The update changed the structure of account.json.
 Please backup your existing account.json and run create_account.py again.
 You will be able to use the data from your backed up account.
