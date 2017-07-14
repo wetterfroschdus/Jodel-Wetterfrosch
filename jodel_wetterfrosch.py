@@ -240,8 +240,7 @@ account = jodel_api.JodelAccount(
     is_legacy= data.legacy)
 
 refresh_access(account, data.lat, data.lng, data.city, data.API_KEY, data.CITY, data.legacy, data.dwdname, data.dwdpass)
-print("läuft")
-'''
+
 time.sleep(5)
 
 Post = account.create_post(message=PostData, color="9EC41C")
@@ -263,4 +262,3 @@ if "post_id" not  in Post2[1] :
         raise Exception("Pollen comment could not be sent!")
        
 logger.info("Posts sent. Post ID's are:     Weather post: %s     Pollen comment: %s", Post[1]["post_id"], Post2[1]["post_id"])
-'''
