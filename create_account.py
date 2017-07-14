@@ -39,8 +39,10 @@ def y_n(question):
     if answer =="n":
         return False
 
-def write_data(file_data):
-    with open('account.json', 'w') as outfile:
+def write_data(file_data, filename):
+    if ".json" not in filename:
+        filename = "%s.json" % (filename)
+    with open(filename, 'w') as outfile:
         json.dump(file_data, outfile, indent=4)
 
 def create_data():
@@ -155,5 +157,7 @@ def check_dwdftp(dwdname, dwdpass):
         print("Invalid username or password")
         return False
 
-write_data(create_data())
+
+filename = input("Choose an account file name:\n")
+write_data(create_data(),filename)
 print('Data has been successfully written. You can now use "jodel_wetterfrosch.py"')
