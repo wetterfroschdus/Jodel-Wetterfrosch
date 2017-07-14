@@ -6,12 +6,16 @@ import logging
 import jodel_api
 import json
 import time
+from ftplib import FTP
+import xmltodict
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s    %(message)s', filename="jodel_wetterfrosch.log")
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s    %(message)s', filename="jodel_wetterfrosch.log")
 logger = logging.getLogger(__name__)
 
 class DataRead(object):
-    def __init__(self, lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY):
+    legacy = True
+    def __init__(self, lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY, legacy, dwdname, dwdpass):
         self.expiration_date = expiration_date
         self.distinct_id = distinct_id
         self.refresh_token = refresh_token
@@ -22,12 +26,15 @@ class DataRead(object):
         self.city = city
         self.API_KEY = API_KEY
         self.CITY = CITY
+        self.legacy = legacy
+        self.dwdname = dwdname
+        self.dwdpass = dwdpass
 
 def write_data(file_data):
     with open('account.json', 'w') as outfile:
         json.dump(file_data, outfile, indent=4)
 
-def create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY):
+def create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY, legacy, dwdname, dwdpass):
     file_data = {
         "lat":lat,
         "lng":lng,
@@ -38,11 +45,14 @@ def create_data(lat, lng, city, access_token, expiration_date, refresh_token, di
         "distinct_id":distinct_id,
         "refresh_token":refresh_token,
         "device_uid":device_uid,
-        "access_token":access_token
+        "access_token":access_token,
+        "legacy":legacy,
+        "dwdname":dwdname,
+        "dwdpass":dwdpass
         }
     return file_data
 
-def refresh_access(account, lat, lng, city, API_KEY, CITY):
+def refresh_access(account, lat, lng, city, API_KEY, CITY, legacy, dwdname, dwdpass):
     account.refresh_access_token()
     refreshed_account = account.get_account_data()
     expiration_date = refreshed_account["expiration_date"]
@@ -50,7 +60,7 @@ def refresh_access(account, lat, lng, city, API_KEY, CITY):
     refresh_token = refreshed_account["refresh_token"]
     device_uid = refreshed_account["device_uid"]
     access_token = refreshed_account["access_token"]
-    write_data(create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY))
+    write_data(create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY, legacy, dwdname, dwdpass))
 
 def read_data():
     with open('account.json', 'r') as infile:
@@ -66,7 +76,15 @@ def read_data():
     city = file_data["city"]
     API_KEY = file_data["API_KEY"]
     CITY = file_data["CITY"]
-    return DataRead(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY)
+    legacy = file_data["legacy"]
+    dwdname = file_data["dwdname"]
+    dwdpass = file_data["dwdpass"]
+    return DataRead(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY, legacy, dwdname, dwdpass)
+
+def convert(xml_file, xml_attribs=True):
+    with open(xml_file, "rb") as f:
+        d = xmltodict.parse(f, xml_attribs=xml_attribs)
+        return d
 
 data = read_data()
 
@@ -95,6 +113,16 @@ response = requests.get('https://api.wunderground.com/api/%s/forecast/q/zmw:%s.j
 response_json = response.json()
 response = requests.get('https://api.wunderground.com/api/%s/astronomy/q/zmw:%s.json' % (data.API_KEY, data.CITY))
 dayl_response_json = response.json()
+
+ftp = FTP('ftp-outgoing2.dwd.de')
+ftp.login(data.dwdname, data.dwdpass)
+
+ftp.cwd("gds/specials/alerts/health")
+
+with open('s_b31fg.xml', 'wb') as outfile:
+    ftp.retrbinary("RETR s_b31fg.xml", outfile.write)
+
+pollen_data = convert("s_b31fg.xml")
 
 weekdays_short = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]
 days = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"]
@@ -144,10 +172,57 @@ chanceofrain = response_json['forecast']['simpleforecast']['forecastday'][0]['po
 conditions = response_json['forecast']['simpleforecast']['forecastday'][0]['icon']
 
 WeatherEmoji = emojis[conditions]
-logger.info('Weather is "%s". Weather emoji is: %s', conditions, WeatherEmoji)
 
 PostData = "++++Wetterjodel++++\nGuten Morgen! Am heutigen {0}, den {1} gibts {2}!\n📈 {3}°C     📉 {4}°C\n🌄 {5}     🌅 {6}\n☔ {7}%     💦 {8}%\n🌬 {9} {10} km/h\n💨 {11} {12} km/h\nEuer #Wetter🐸".format(day, date, WeatherEmoji, highTemp, lowTemp, sunrise, sunset, chanceofrain, aveHumidity, aveWindDir, aveWind, maxWindDir, maxWind)
-logger.info("PostData is:\n%s", PostData.encode(encoding='utf_8', errors='replace'))
+logger.info("PostData is: %s", PostData.encode(encoding='utf_8', errors='replace'))
+
+pollen = {}
+helpy = 0
+
+if not pollen_data["Pollen_forecast"]["region"][3]["partregion"][0]["Hasel"]["today"] == "0":
+    pollen["Hasel"] = pollen_data["Pollen_forecast"]["region"][3]["partregion"][0]["Hasel"]["today"]
+    helpy = helpy + 1 
+if not pollen_data["Pollen_forecast"]["region"][3]["partregion"][0]["Erle"]["today"] == "0":
+    pollen["Erle"] = pollen_data["Pollen_forecast"]["region"][3]["partregion"][0]["Erle"]["today"]
+    helpy = helpy + 1 
+if not pollen_data["Pollen_forecast"]["region"][3]["partregion"][0]["Esche"]["today"] =="0":
+    pollen["Esche"] = pollen_data["Pollen_forecast"]["region"][3]["partregion"][0]["Esche"]["today"]
+    helpy = helpy + 1
+if not pollen_data["Pollen_forecast"]["region"][3]["partregion"][0]["Birke"]["today"] == "0":
+    pollen["Birke"] = pollen_data["Pollen_forecast"]["region"][3]["partregion"][0]["Birke"]["today"]
+    helpy = helpy + 1 
+if not pollen_data["Pollen_forecast"]["region"][3]["partregion"][0]["Graeser"]["today"] == "0":
+    pollen["Gräser"] = pollen_data["Pollen_forecast"]["region"][3]["partregion"][0]["Graeser"]["today"]
+    helpy = helpy + 1 
+if not pollen_data["Pollen_forecast"]["region"][3]["partregion"][0]["Roggen"]["today"] == "0":
+    pollen["Roggen"] = pollen_data["Pollen_forecast"]["region"][3]["partregion"][0]["Roggen"]["today"]
+    helpy = helpy + 1
+if not pollen_data["Pollen_forecast"]["region"][3]["partregion"][0]["Ambrosia"]["today"] == "0":
+    pollen["Ambrosia"] = pollen_data["Pollen_forecast"]["region"][3]["partregion"][0]["Ambrosia"]["today"]
+    helpy = helpy + 1
+    
+if helpy == 0:
+    PollenPostData = "----Pollenwarnungen----\nHeute keine Belastung durch Pollen!"
+else:
+    l = []
+    l.append("----Pollenwarnungen----")
+    for key, value in pollen.items():
+        if value == "0-1":
+            l.append("\n{0}: keine bis geringe Belastung".format(key))
+        if value == "1":
+            l.append("\n{0}: geringe Belastung".format(key))
+        if value == "1-2":
+            l.append("\n{0}: geringe bis mittlere Belastung".format(key))
+        if value == "2":
+            l.append("\n{0}: mittlere Belastung".format(key))
+        if value == "2-3":
+            l.append("\n{0}: mittlere bis hohe Belastung".format(key))
+        if value == "3":
+            l.append("\n{0}: hohe Belastung".format(key))
+        
+    PollenPostData = "".join(l)
+
+logger.info("PollenPostData is: %s", PollenPostData.encode(encoding='utf_8', errors='replace'))
 
 account = jodel_api.JodelAccount(
     lat = data.lat,
@@ -157,9 +232,10 @@ account = jodel_api.JodelAccount(
     expiration_date = data.expiration_date,
     refresh_token = data.refresh_token,
     distinct_id = data.distinct_id,
-    device_uid = data.device_uid)
+    device_uid = data.device_uid,
+    is_legacy= data.legacy)
 
-refresh_access(account, data.lat, data.lng, data.city, data.API_KEY, data.CITY)
+refresh_access(account, data.lat, data.lng, data.city, data.API_KEY, data.CITY, data.legacy, data.dwdname, data.dwdpass)
 
 time.sleep(5)
 
@@ -173,12 +249,12 @@ if "post_id" not in Post[1]:
 
 time.sleep(2)
 
-Post2 = account.create_post(message="Quaaaaak!\nIch bin ein digitaler 🐸!\n\nWeitere Infos unter:\njodel-wetterfrosch.tk", ancestor=Post[1]["post_id"])
+Post2 = account.create_post(message=PollenPostData, ancestor=Post[1]["post_id"])
 if "post_id" not  in Post2[1] :
     time.sleep(10)
-    Post2 = account.create_post(message="Quaaaaak!\nIch bin ein digitaler 🐸!\n\nWeitere Infos unter:\njodel-wetterfrosch.tk", ancestor=Post[1]["post_id"])
+    Post2 = account.create_post(message=PollenPostData, ancestor=Post[1]["post_id"])
     if "post_id" not  in Post2[1] :
-        logger.info("Bot comment could not be sent!\nRaising Exception")
-        raise Exception("Bot comment could not be sent!")
-        
-logger.info("Posts sent. Post ID's are:     Weather post: %s     Bot comment: %s", Post[1]["post_id"], Post2[1]["post_id"])
+        logger.info("Pollen comment could not be sent!\nRaising Exception")
+        raise Exception("Pollen comment could not be sent!")
+       
+logger.info("Posts sent. Post ID's are:     Weather post: %s     Pollen comment: %s", Post[1]["post_id"], Post2[1]["post_id"])
