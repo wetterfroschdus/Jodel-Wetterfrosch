@@ -25,7 +25,7 @@ python create_account.py
 ## Usage
 Use jodel_wetterfrosch.py to create a weather Jodel:
 ```
-python jodel_wetterfrosch.py
+python jodel_wetterfrosch.py -a account_file.json
 ```
 
 ## Requirement
@@ -47,4 +47,4 @@ alt="Weather Underground Logo" height="60" border="0" /></a>
 
 ### Pollen Data Provider
 <a href="https://www.dwd.de"><img src="https://upload.wikimedia.org/wikipedia/de/thumb/7/7b/DWD-Logo_2013.svg/800px-DWD-Logo_2013.svg.png" 
-alt="DWD Logo" height="70" border="10" /></a>
+alt="DWD Logo" height="70" border="0" /></a>
