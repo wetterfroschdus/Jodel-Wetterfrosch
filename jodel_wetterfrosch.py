@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s    %(message)s', fi
 logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser(description="A script to create weather posts for Jodel.\nTo create a Jodel, supply an account.")
-parser.add_argument("-a","--account", metavar="ACCOUNT_FILE.json", default="account.json")
+parser.add_argument("-a","--account", metavar="ACCOUNT_FILE.json")
 args = parser.parse_args()
 
 class DataRead(object):
@@ -34,10 +34,6 @@ class DataRead(object):
         self.dwdname = dwdname
         self.dwdpass = dwdpass
 
-def write_data(file_data):
-    with open('account.json', 'w') as outfile:
-        json.dump(file_data, outfile, indent=4)
-
 def create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY, legacy, dwdname, dwdpass):
     file_data = {
         "lat":lat,
@@ -56,7 +52,7 @@ def create_data(lat, lng, city, access_token, expiration_date, refresh_token, di
         }
     return file_data
 
-def refresh_access(account, lat, lng, city, API_KEY, CITY, legacy, dwdname, dwdpass):
+def refresh_access(account, lat, lng, city, API_KEY, CITY, legacy, dwdname, dwdpass, filename):
     account.refresh_access_token()
     refreshed_account = account.get_account_data()
     expiration_date = refreshed_account["expiration_date"]
@@ -64,7 +60,11 @@ def refresh_access(account, lat, lng, city, API_KEY, CITY, legacy, dwdname, dwdp
     refresh_token = refreshed_account["refresh_token"]
     device_uid = refreshed_account["device_uid"]
     access_token = refreshed_account["access_token"]
-    write_data(create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY, legacy, dwdname, dwdpass))
+    write_data(create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY, legacy, dwdname, dwdpass),filename)
+    
+def write_data(file_data,filename):
+    with open(filename, 'w') as outfile:
+        json.dump(file_data, outfile, indent=4)
 
 def read_data(filename):
     with open(filename, 'r') as infile:
@@ -239,7 +239,7 @@ account = jodel_api.JodelAccount(
     device_uid = data.device_uid,
     is_legacy= data.legacy)
 
-refresh_access(account, data.lat, data.lng, data.city, data.API_KEY, data.CITY, data.legacy, data.dwdname, data.dwdpass)
+refresh_access(account, data.lat, data.lng, data.city, data.API_KEY, data.CITY, data.legacy, data.dwdname, data.dwdpass, args.account)
 
 time.sleep(5)
 
