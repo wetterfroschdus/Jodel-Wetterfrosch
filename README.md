@@ -9,7 +9,7 @@
 ```
 git clone https://github.com/wetterfroschdus/Jodel-Wetterfrosch.git
 ```
-- Install the [requirement](./README.md#requirements)!
+- Install the [requirement](./README.md#requirement)!
 ```
 pip install jodel_api
 ```
