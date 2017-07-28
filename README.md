@@ -9,7 +9,7 @@
 ```
 git clone https://github.com/wetterfroschdus/Jodel-Wetterfrosch.git
 ```
-- Install the [requirement](./README.md#requirement)!
+- Install the [requirement jodel_api](https://github.com/nborrmann/jodel_api/)!
 ```
 pip install jodel_api
 ```
@@ -27,10 +27,6 @@ Use jodel_wetterfrosch.py to create a weather Jodel:
 ```
 python jodel_wetterfrosch.py -a account_file.json
 ```
-
-## Requirement
-- [jodel_api](https://github.com/nborrmann/jodel_api/)
-
 
 ## Update
 The update changed the structure of account.json.
