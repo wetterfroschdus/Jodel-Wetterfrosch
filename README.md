@@ -1,15 +1,13 @@
 # Jodel-Wetterfrosch 🐸
 [![forthebadge](http://forthebadge.com/images/badges/fuck-it-ship-it.svg)](https://forthebadge.com) [![Code Health](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master/landscape.svg?style=flat-square)](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master)
 
-**[If you want to update from a previous version, please read!](./README.md#update)**
-
 
 ## Installation
 - Clone the repository.
 ```
 git clone https://github.com/wetterfroschdus/Jodel-Wetterfrosch.git
 ```
-- Install the [requirement jodel_api](https://github.com/nborrmann/jodel_api/)!
+- Install the requirement: [jodel_api](https://github.com/nborrmann/jodel_api/)!
 ```
 pip install jodel_api
 ```
@@ -28,10 +26,8 @@ Use jodel_wetterfrosch.py to create a weather Jodel:
 python jodel_wetterfrosch.py -a account_file.json
 ```
 
-## Update
-The update changed the structure of account.json.
-Please backup your existing account.json and run create_account.py again.
-You will be able to use the data from your backed up account.
+
+
 
 
 
