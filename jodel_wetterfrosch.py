@@ -159,7 +159,7 @@ aveWind = response_json['forecast']['simpleforecast']['forecastday'][0]['avewind
 aveWindDir = response_json['forecast']['simpleforecast']['forecastday'][0]['avewind']['dir']
 
 dirs = ["North", "South", "West", "East", "Variable"]
-dirs_s = ["N", "S", "W", "E", " "]
+dirs_s = ["N", "S", "W", "O", " "]
 
 for x in range(0,5):
     if maxWindDir == dirs[x]:
