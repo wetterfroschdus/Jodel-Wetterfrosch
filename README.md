@@ -2,7 +2,7 @@
 [![forthebadge](http://forthebadge.com/images/badges/fuck-it-ship-it.svg)](https://forthebadge.com) [![Code Health](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master/landscape.svg?style=flat-square)](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master)
 
 
-## Installation
+## How to use
 - Clone the repository.
 ```
 git clone https://github.com/wetterfroschdus/Jodel-Wetterfrosch.git
@@ -11,16 +11,19 @@ git clone https://github.com/wetterfroschdus/Jodel-Wetterfrosch.git
 ```
 pip install jodel_api
 ```
-## Setup
+### [jodel_api](https://github.com/nborrmann/jodel_api/) by [nborrmann](https://github.com/nborrmann) is not updated with new HMAC keys from new Jodel versions anymore, so it won't work. There's still a way to get the keys, just google around a bit. 😉 
+
 - Get an [API Key](https://www.wunderground.com/weather/api/d/pricing.html) from Weather Underground
-- Get [login credentials](https://kunden.dwd.de/gdsRegistration/gdsRegistrationStart.do) for the DWD GDS FTP Server
+
+- Get [login credentials](https://kunden.dwd.de/gdsRegistration/gdsRegistrationStart.do) for the DWD GDS FTP Server (No longer available, update follows when the DWD makes the data available with their new [Opendata](https://www.dwd.de/DE/leistungen/opendata/opendata.html) thingy.
+
 - Use create_account.py to generate the necessary data:
 ```
 python create_account.py
 ```
  Just follow the instructions 😉
 
-## Usage
+## Run it!
 Use jodel_wetterfrosch.py to create a weather Jodel:
 ```
 python jodel_wetterfrosch.py -a account_file.json
