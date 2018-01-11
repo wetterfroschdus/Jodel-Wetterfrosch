@@ -11,11 +11,9 @@ git clone https://github.com/wetterfroschdus/Jodel-Wetterfrosch.git
 ```
 pip install jodel_api
 ```
-### [jodel_api](https://github.com/nborrmann/jodel_api/) by [nborrmann](https://github.com/nborrmann) is not updated with new HMAC keys from new Jodel versions anymore, so it won't work. There's still a way to get the keys, just google around a bit. 😉 
+#### [jodel_api](https://github.com/nborrmann/jodel_api/) by [nborrmann](https://github.com/nborrmann) is not updated with new HMAC keys from new Jodel versions anymore, so it won't work. There's still a way to get the keys, just google around a bit. 😉 
 
 - Get an [API Key](https://www.wunderground.com/weather/api/d/pricing.html) from Weather Underground
-
-- Get [login credentials](https://kunden.dwd.de/gdsRegistration/gdsRegistrationStart.do) for the DWD GDS FTP Server (No longer available, update follows when the DWD makes the data available with their new [Opendata](https://www.dwd.de/DE/leistungen/opendata/opendata.html) thingy.
 
 - Use create_account.py to generate the necessary data:
 ```
