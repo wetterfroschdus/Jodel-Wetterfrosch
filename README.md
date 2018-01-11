@@ -26,6 +26,10 @@ Use jodel_wetterfrosch.py to create a weather Jodel:
 ```
 python jodel_wetterfrosch.py -a account_file.json
 ```
+If you place the account_file in a different folder as the script, you need to specify the full path to it:
+```
+python jodel_wetterfrosch.py -a /foo/bar/account_file.json
+```
 
 
 
