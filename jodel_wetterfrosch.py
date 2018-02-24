@@ -270,7 +270,7 @@ elif len(pollen) > 5:
             if value == "3":
                 l.append("{0}: hohe Belastung\n".format(key))
         PollenPostData.append("".join(l)[:-2])
-        logger.info("PollenPostData is: (1) %s  (2)  ", PollenPostData[0].encode(encoding='utf_8', errors='replace'), PollenPostData[1].encode(encoding='utf_8', errors='replace'))
+        logger.info("PollenPostData is: (1) %s  (2) %s", PollenPostData[0].encode(encoding='utf_8', errors='replace'), PollenPostData[1].encode(encoding='utf_8', errors='replace'))
 else:
     PollenPostData_too_long = False
     l = []
