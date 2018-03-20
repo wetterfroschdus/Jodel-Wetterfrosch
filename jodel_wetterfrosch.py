@@ -13,7 +13,8 @@ abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 os.chdir(dname)
 
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s    %(message)s', filename="jodel_wetterfrosch.log")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s\t%(message)s',
+                    filename="jodel_wetterfrosch.log")
 logger = logging.getLogger(__name__)
 
 parser = argparse.ArgumentParser(
@@ -22,6 +23,7 @@ parser.add_argument("-a", "--account", metavar="ACCOUNT_FILE.json")
 args = parser.parse_args()
 
 
+# Object for storing the json data, which is read from the account file by read_data().
 class DataRead(object):
     def __init__(self, lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY,
                  CITY, legacy, pollen_region, pollen_partregion):
@@ -40,6 +42,7 @@ class DataRead(object):
         self.pollen_partregion = pollen_partregion
 
 
+# create_data() turns the updated data into json format.
 def create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY,
                 legacy, pollen_region, pollen_partregion):
     file_data = {
@@ -60,6 +63,8 @@ def create_data(lat, lng, city, access_token, expiration_date, refresh_token, di
     return file_data
 
 
+# refresh_access() takes the Jodel account and refreshes the access token.
+# It will then write the data back to the account file.
 def refresh_access(account, lat, lng, city, API_KEY, CITY, legacy, pollen_region, pollen_partregion, filename):
     account.refresh_access_token()
     refreshed_account = account.get_account_data()
@@ -73,11 +78,13 @@ def refresh_access(account, lat, lng, city, API_KEY, CITY, legacy, pollen_region
                     CITY, legacy, pollen_region, pollen_partregion), filename)
 
 
+# write_data() writes the json data to the account file.
 def write_data(file_data, filename):
     with open(filename, 'w') as outfile:
         json.dump(file_data, outfile, indent=4)
 
 
+# read_data() reads the json data from the account file and returns it as a DataRead object.
 def read_data(filename):
     with open(filename, 'r') as infile:
         file_data = json.load(infile)
@@ -99,14 +106,17 @@ def read_data(filename):
                     CITY, legacy, pollen_region, pollen_partregion)
 
 
+# replaceEast() replaces "E" with "O" in strings.
+# Because "East" is "Osten" in german.
 def replaceEast(string):
-    test = list(string)
-    for x in range(len(test)):
-        if test[x] == "E":
-            test[x] = "O"
-    return "".join(test)
+    chars = list(string)
+    for x in range(len(chars)):
+        if chars[x] == "E":
+            chars[x] = "O"
+    return "".join(chars)
 
 
+# sift_pollen_data() goes through the pollen data from DWD and only returns the data for the specified region/subregion.
 def sift_pollen_data(region, partregion):
     pollen_data = json.loads(
         requests.get('https://opendata.dwd.de/climate_environment/health/alerts/s31fg.json').content)
@@ -116,31 +126,32 @@ def sift_pollen_data(region, partregion):
             return pollen_data["content"][x]["Pollen"]
 
 
+# splitdict() splits one dict into two dicts, whilst the first dict won't have more than 5 entries.
 def splitdict(orig):
-    dict1 = {}
-    dict2 = {}
-    if "Ambrosia" in orig:
-        dict1["Ambrosia"] = orig["Ambrosia"]
-    if "Beifuss" in orig:
-        dict1["Beifuss"] = orig["Beifuss"]
-    if "Birke" in orig:
-        dict1["Birke"] = orig["Birke"]
-    if "Erle" in orig:
-        dict1["Erle"] = orig["Erle"]
-    if "Esche" in orig:
-        dict1["Esche"] = orig["Esche"]
-    if "Gräser" in orig:
-        dict2["Gräser"] = orig["Gräser"]
-    if "Hasel" in orig:
-        dict2["Hasel"] = orig["Hasel"]
-    if "Roggen" in orig:
-        dict2["Roggen"] = orig["Roggen"]
+    dict1 = dict()
+    dict2 = dict()
+    x = 0
+    for key, value in orig.items():
+        if x < 5:
+            dict1[key] = value
+            x += 1
+        else:
+            dict2[key] = value
     return dict1, dict2
 
 
-data = read_data(args.account)
+# Read the account file into a DataRead Object "data".
+try:
+    data = read_data(args.account)
+except TypeError:
+    logger.error("No account file specified!")
+    raise Exception("No account file specified!")
+except:
+    logger.error("An unknown error occurred while parsing the account file.")
+    raise Exception("An unknown error occurred while parsing the account file.")
 
-emojis = {}
+# Dict of weather conditions and their emojis.
+emojis = dict()
 emojis["clear"] = "🌞"
 emojis["sunny"] = "🌞"
 emojis["hazy"] = "🌫🌞"
@@ -161,18 +172,16 @@ emojis["chancetstorms"] = "vielleicht ⛈"
 emojis["sleet"] = "❄🌧"
 emojis["chancesleet"] = "vielleicht ❄🌧"
 
+# Get data from wunderground api.
 response = requests.get('https://api.wunderground.com/api/%s/forecast/q/zmw:%s.json' % (data.API_KEY, data.CITY))
 response_json = response.json()
 response = requests.get('https://api.wunderground.com/api/%s/astronomy/q/zmw:%s.json' % (data.API_KEY, data.CITY))
 dayl_response_json = response.json()
 
-weekdays_short = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-days = ["Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag", "Sonntag"]
-
-for x in range(0, 7):
-    if response_json['forecast']['simpleforecast']['forecastday'][0]['date']['weekday_short'] == weekdays_short[x]:
-        day = days[x]
-        break
+# Translating the weekday using a dict.
+weekdays = {"Mon": "Montag", "Tue": "Dienstag", "Wed": "Mittwoch", "Thu": "Donnerstag", "Fri": "Freitag",
+            "Sat": "Samstag", "Sun": "Sonntag"}
+day = weekdays[response_json['forecast']['simpleforecast']['forecastday'][0]['date']['weekday_short']]
 
 d = response_json['forecast']['simpleforecast']['forecastday'][0]['date']['day']
 m = response_json['forecast']['simpleforecast']['forecastday'][0]['date']['month']
@@ -195,19 +204,19 @@ maxWindDir = response_json['forecast']['simpleforecast']['forecastday'][0]['maxw
 aveWind = response_json['forecast']['simpleforecast']['forecastday'][0]['avewind']['kph']
 aveWindDir = response_json['forecast']['simpleforecast']['forecastday'][0]['avewind']['dir']
 
-dirs = ["North", "South", "West", "East", "Variable"]
-dirs_s = ["N", "S", "W", "E", " "]
+# Shorten direction using a dict if necessary.
+dirs_short = dict(North="N", South="S", West="W", East="E", Variable=" ")
+try:
+    maxWindDir = dirs_short[maxWindDir]
+except KeyError:
+    pass
 
-for x in range(len(dirs)):
-    if maxWindDir == dirs[x]:
-        maxWindDir = dirs_s[x]
-        break
+try:
+    aveWindDir = dirs_short[aveWindDir]
+except KeyError:
+    pass
 
-for x in range(len(dirs)):
-    if aveWindDir == dirs[x]:
-        aveWindDir = dirs_s[x]
-        break
-
+# Replace "E" with "O" for "translation".
 maxWindDir = replaceEast(maxWindDir)
 aveWindDir = replaceEast(aveWindDir)
 
@@ -218,15 +227,18 @@ conditions = response_json['forecast']['simpleforecast']['forecastday'][0]['icon
 
 WeatherEmoji = emojis[conditions]
 
+# Create the Jodel post string.
 PostData = "++++Wetterjodel++++\nGuten Morgen! Am heutigen {0}, den {1} gibts {2}!\n📈 {3}°C     📉 {4}°C\n🌄 {5}     🌅 {6}\n☔ {7}%     💦 {8}%\n🌬 {9} {10} km/h\n💨 {11} {12} km/h\nEuer #Wetter🐸".format(
     day, date, WeatherEmoji, highTemp, lowTemp, sunrise, sunset, chanceofrain, aveHumidity, aveWindDir, aveWind,
     maxWindDir, maxWind)
 logger.info("PostData is: %s", PostData.encode(encoding='utf_8', errors='replace'))
 
-# POLLEN
+# Get pollen data for region using sift_pollen_data()
 pollen_for_region = sift_pollen_data(data.pollen_region, data.pollen_partregion)
 
-pollen = {}
+# Checks if there is useful information on the possible pollen types.
+# Not useful: "-1" -> No pollen data, "0" -> No pollination.
+pollen = dict()
 if not pollen_for_region["Ambrosia"]["tomorrow"] == "0" and not pollen_for_region["Ambrosia"]["tomorrow"] == "-1":
     pollen["Ambrosia"] = pollen_for_region["Ambrosia"]["tomorrow"]
 if not pollen_for_region["Beifuss"]["tomorrow"] == "0" and not pollen_for_region["Beifuss"]["tomorrow"] == "-1":
@@ -244,6 +256,14 @@ if not pollen_for_region["Hasel"]["tomorrow"] == "0" and not pollen_for_region["
 if not pollen_for_region["Roggen"]["tomorrow"] == "0" and not pollen_for_region["Roggen"]["tomorrow"] == "-1":
     pollen["Roggen"] = pollen_for_region["Roggen"]["tomorrow"]
 
+# Creates the Jodel-Pollen-post string by first checking the length of the pollen dict.
+# If there are more than 5 entries, the post has to be split into two posts.
+# This happens using the PollenPostData_too_long variable and the splitdict() function.
+# If the post would be too long, we set PollenPostData_too_long to True and split the dict into two.
+# The split dicts are stored in "pollen" as a tuple.
+# We go over the pollen dict (or dicts) and append the strings to a list, which we the join to our finalized post string.
+# In the case of more than 5 entries in the pollen dict,
+# the PollenPostData variable will be list of two strings, not a string.
 if len(pollen) == 0:
     PollenPostData_too_long = False
     PollenPostData = "----Pollenwarnungen----\nHeute keine Belastung durch Pollen! 🎉"
@@ -270,7 +290,8 @@ elif len(pollen) > 5:
             if value == "3":
                 l.append("{0}: hohe Belastung\n".format(key))
         PollenPostData.append("".join(l)[:-2])
-        logger.info("PollenPostData is: (1) %s  (2) %s", PollenPostData[0].encode(encoding='utf_8', errors='replace'), PollenPostData[1].encode(encoding='utf_8', errors='replace'))
+        logger.info("PollenPostData is: (1) %s\t(2) %s", PollenPostData[0].encode(encoding='utf_8', errors='replace'),
+                    PollenPostData[1].encode(encoding='utf_8', errors='replace'))
 else:
     PollenPostData_too_long = False
     l = []
@@ -291,7 +312,7 @@ else:
     PollenPostData = "".join(l)
     logger.info("PollenPostData is: %s", PollenPostData.encode(encoding='utf_8', errors='replace'))
 
-
+# Initiates the Jodel account.
 account = jodel_api.JodelAccount(
     lat=data.lat,
     lng=data.lng,
@@ -303,22 +324,26 @@ account = jodel_api.JodelAccount(
     device_uid=data.device_uid,
     is_legacy=data.legacy)
 
+# Refreshes access using refresh_access(), which also writes the new tokens back to the account file.
 refresh_access(account, data.lat, data.lng, data.city, data.API_KEY, data.CITY, data.legacy, data.pollen_region,
                data.pollen_partregion, args.account)
 
 time.sleep(5)
 
+# Try to post the Weather Jodel two times, if it fails, raise an exception.
 Post = account.create_post(message=PostData, color="9EC41C")
 if "post_id" not in Post[1]:
     time.sleep(10)
     Post = account.create_post(message=PostData, color="9EC41C")
     if "post_id" not in Post[1]:
-        logger.info("Weather post could not be sent!\nRaising Exception")
+        logger.info("Weather post could not be sent! Raising Exception")
         raise Exception("Weather post could not be sent!")
 
 time.sleep(5)
 
+# Try to post the Pollen comment two times, if it fails, raise an exception.
 if PollenPostData_too_long:
+    # Post in two comments, because a single post would be too long.
     Post2 = []
     for x in range(len(PollenPostData)):
         Post2 = account.create_post(message=PollenPostData[x], ancestor=Post[1]["post_id"])
@@ -326,7 +351,7 @@ if PollenPostData_too_long:
             time.sleep(10)
             Post2.append(account.create_post(message=PollenPostData[x], ancestor=Post[1]["post_id"]))
             if "post_id" not in Post2[1]:
-                logger.info("Pollen comment(Part %s) could not be sent!\nRaising Exception", x)
+                logger.info("Pollen comment(Part %s) could not be sent! Raising Exception", x)
                 raise Exception("Pollen comment(Part %s) could not be sent!", x)
         time.sleep(4)
     logger.info("Posts sent. Post ID's are:     Weather post: %s     Pollen comment #1: %s     Pollen comment #2: %s",
@@ -337,7 +362,7 @@ else:
         time.sleep(10)
         Post2 = account.create_post(message=PollenPostData, ancestor=Post[1]["post_id"])
         if "post_id" not in Post2[1]:
-            logger.info("Pollen comment could not be sent!\nRaising Exception")
+            logger.info("Pollen comment could not be sent! Raising Exception")
             raise Exception("Pollen comment could not be sent!")
     logger.info("Posts sent. Post ID's are:     Weather post: %s     Pollen comment: %s", Post[1]["post_id"],
                 Post2[1]["post_id"])
