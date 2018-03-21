@@ -50,8 +50,6 @@ def create_data(lat, lng, city, access_token, expiration_date, refresh_token, di
         "lat": lat,
         "lng": lng,
         "city": city,
-        "API_KEY": API_KEY,
-        "CITY": CITY,
         "expiration_date": expiration_date,
         "distinct_id": distinct_id,
         "refresh_token": refresh_token,
@@ -59,7 +57,9 @@ def create_data(lat, lng, city, access_token, expiration_date, refresh_token, di
         "access_token": access_token,
         "legacy": legacy,
         "pollen_region": pollen_region,
-        "pollen_partregion": pollen_partregion
+        "pollen_partregion": pollen_partregion,
+        "API_KEY": API_KEY,
+        "CITY": CITY
     }
     return file_data
 
@@ -74,14 +74,14 @@ def refresh_access(account, lat, lng, city, API_KEY, CITY, legacy, pollen_region
     refresh_token = refreshed_account["refresh_token"]
     device_uid = refreshed_account["device_uid"]
     access_token = refreshed_account["access_token"]
-    write_data(
-        create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY,
-                    CITY, legacy, pollen_region, pollen_partregion), filename)
+    filedata = create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY,
+                CITY, legacy, pollen_region, pollen_partregion)
+    write_data(filedata, filename)
 
 
 # write_data() writes the json data to the account file.
-def write_data(file_data, filename):
-    with open(filename, 'w') as outfile:
+def write_data(file_data, file_name):
+    with open(file_name, 'w') as outfile:
         json.dump(file_data, outfile, indent=4)
 
 
@@ -98,11 +98,11 @@ def read_data(filename):
     lat = file_data["lat"]
     lng = file_data["lng"]
     city = file_data["city"]
-    API_KEY = file_data["API_KEY"]
-    CITY = file_data["CITY"]
     legacy = file_data["legacy"]
     pollen_region = file_data["pollen_region"]
     pollen_partregion = file_data["pollen_partregion"]
+    API_KEY = file_data["API_KEY"]
+    CITY = file_data["CITY"]
     return DataRead(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY,
                     CITY, legacy, pollen_region, pollen_partregion)
 
