@@ -1,6 +1,6 @@
 # Jodel-Wetterfrosch 🐸
 [![Code Health](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master/landscape.svg?style=flat)](https://landscape.io/github/wetterfroschdus/Jodel-Wetterfrosch/master)                                                                 
-![Karma Hamburg](https://raw.githubusercontent.com/wetterfroschdus/karma-badges/master/hamburg.svg) ![Karma Bremen](https://raw.githubusercontent.com/wetterfroschdus/karma-badges/master/bremen.svg) ![Karma Düsseldorf](https://raw.githubusercontent.com/wetterfroschdus/karma-badges/master/dusseldorf.svg) ![Karma Dortmund](https://raw.githubusercontent.com/wetterfroschdus/karma-badges/master/dortmund.svg) ![Karma Mönchengladbach](https://raw.githubusercontent.com/wetterfroschdus/karma-badges/master/mgladbach.svg)
+![Karma Hamburg](https://cdn.rawgit.com/wetterfroschdus/karma-badges/master/hamburg.svg) ![Karma Bremen](https://cdn.rawgit.com/wetterfroschdus/karma-badges/master/bremen.svg) ![Karma Düsseldorf](https://cdn.rawgit.com/wetterfroschdus/karma-badges/master/dusseldorf.svg) ![Karma Dortmund](https://cdn.rawgit.com/wetterfroschdus/karma-badges/master/dortmund.svg) ![Karma Mönchengladbach](https://cdn.rawgit.com/wetterfroschdus/karma-badges/master/mgladbach.svg)
 
 
 ## How to use
