@@ -144,6 +144,7 @@ def splitdict(orig):
 # Read the account file into a DataRead Object "data".
 try:
     data = read_data(args.account)
+    logger.info("Using account %s", args.account)
 except TypeError:
     logger.error("No account file specified!")
     raise Exception("No account file specified!")
