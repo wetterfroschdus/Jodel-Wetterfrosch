@@ -323,14 +323,10 @@ if __name__=='__main__':
     # Simultanious processing of the post strings.
     queue1 = Queue()
     queue2 = Queue()
-    p1 = Process(target = getPostData, args=(queue1, data))
-    p2 = Process(target=getPollenPostData, args=(queue2, data))
-    p1.start()
-    p2.start()
+    Process(target = getPostData, args = (queue1, data)).start()
+    Process(target = getPollenPostData, args = (queue2, data)).start()
     PostData = queue1.get()
     PollenPostData = queue2.get()
-    p1.join()
-    p2.join()
 
     # Initializes the Jodel account.
     account = jodel_api.JodelAccount(
