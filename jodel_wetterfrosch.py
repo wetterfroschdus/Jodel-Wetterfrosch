@@ -141,18 +141,7 @@ def splitdict(orig):
     return dict1, dict2
 
 
-# Read the account file into a DataRead Object "data".
-try:
-    data = read_data(args.account)
-    logger.info("Using account %s", args.account)
-except TypeError:
-    logger.error("No account file specified!")
-    raise Exception("No account file specified!")
-except:
-    logger.error("An unknown error occurred while parsing the account file.")
-    raise Exception("An unknown error occurred while parsing the account file.")
-
-def getPostData(queue1):
+def getPostData(queue1, data):
     # Dict of weather conditions and their emojis.
     emojis = dict()
     emojis["clear"] = "🌞"
@@ -237,7 +226,7 @@ def getPostData(queue1):
     logger.info("PostData is: %s", PostData.encode(encoding='utf_8', errors='replace'))
     queue1.put(PostData)
 
-def getPollenPostData(queue2):
+def getPollenPostData(queue2, data):
     # Get pollen data for region using sift_pollen_data()
     pollen_for_region = sift_pollen_data(data.pollen_region, data.pollen_partregion)
 
@@ -319,12 +308,23 @@ def getPollenPostData(queue2):
         logger.info("PollenPostData is: %s", PollenPostData.encode(encoding='utf_8', errors='replace'))
     queue2.put([PollenPostData, PollenPostData_too_long])
 
-# Simultanious processing of the post strings.
 if __name__=='__main__':
+    # Read the account file into a DataRead Object "data".
+    try:
+        data = read_data(args.account)
+        logger.info("Using account file: %s", args.account)
+    except TypeError:
+        logger.error("No account file specified!")
+        raise Exception("No account file specified!")
+    except:
+        logger.error("An unknown error occurred while parsing the account file.")
+        raise Exception("An unknown error occurred while parsing the account file.")
+
+    # Simultanious processing of the post strings.
     queue1 = Queue()
     queue2 = Queue()
-    p1 = Process(target = getPostData, args=(queue1,))
-    p2 = Process(target=getPollenPostData, args=(queue2,))
+    p1 = Process(target = getPostData, args=(queue1, data))
+    p2 = Process(target=getPollenPostData, args=(queue2, data))
     p1.start()
     p2.start()
     PostData = queue1.get()
