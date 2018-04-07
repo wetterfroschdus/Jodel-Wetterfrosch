@@ -127,12 +127,12 @@ def get_data_Pollen():
         requests.get('https://opendata.dwd.de/climate_environment/health/alerts/s31fg.json').content.decode())
 
     while True:
-        print("Pollen regions:")
+        print("Pollen regions (Helpful map: https://www.dwd.de/DE/leistungen/gefahrenindizespollen/Gebiete.html")
         for x in range(len(pollen_data["content"])):
-            print("{0}.\tRegion: {1}\n\tPartregion: {2}".format(x, pollen_data["content"][x]["region_name"],
+            print("{0}.\tRegion:\t\t{1}\n\tPartregion:\t{2}".format(x+1, pollen_data["content"][x]["region_name"],
                                                                 pollen_data["content"][x]["partregion_name"]))
 
-        x = int(input("Choose a region by typing it's number:\n"))
+        x = int(input("Choose a region by typing it's number:\n"))-1
 
         try:
             region = pollen_data["content"][x]["region_id"]
