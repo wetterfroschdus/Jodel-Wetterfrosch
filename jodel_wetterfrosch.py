@@ -338,7 +338,8 @@ if __name__=='__main__':
         refresh_token=data.refresh_token,
         distinct_id=data.distinct_id,
         device_uid=data.device_uid,
-        is_legacy=data.legacy)
+        is_legacy=data.legacy,
+        update_location=False)
 
     # Refreshes access using refresh_access(), which also writes the new tokens back to the account file.
     refresh_access(account, data.lat, data.lng, data.city, data.API_KEY, data.CITY, data.legacy, data.pollen_region,
