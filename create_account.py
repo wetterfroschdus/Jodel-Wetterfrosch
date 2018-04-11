@@ -1,9 +1,8 @@
 import json
+import sys
+from builtins import input
 import jodel_api
 import requests
-from operator import itemgetter
-from builtins import input
-
 
 class JodelAcc(object):
     def __init__(self, lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, legacy):
@@ -19,9 +18,9 @@ class JodelAcc(object):
 
 
 class WeatherData(object):
-    def __init__(self, API_KEY, CITY_code):
+    def __init__(self, API_KEY, LOCATION_code):
         self.API_KEY = API_KEY
-        self.CITY = CITY_code
+        self.LOCATION = LOCATION_code
 
 
 class PollenData(object):
@@ -68,7 +67,7 @@ def create_data(account, weatherdata, pollendata):
         "pollen_region": pollendata.region,
         "pollen_partregion": pollendata.partregion,
         "API_KEY": weatherdata.API_KEY,
-        "CITY": weatherdata.CITY
+        "LOCATION": weatherdata.LOCATION
     }
     return file_data
 
@@ -87,11 +86,12 @@ def create_account():
             account = jodel_api.JodelAccount(lat=lat, lng=lng, city=city)
             print("Done.")
             break
-        except:
+        except Exception as ex:
+            print(ex)
             if y_n("Something went wrong. Retry?"):
                 pass
             else:
-                raise Exception("User abort on Jodel Account creation.")
+                sys.exit()
 
     # Try to verify account
     print("Verifying account...")
@@ -101,25 +101,47 @@ def create_account():
         if y_n("Couldn't verify account.\nServer response was: {0}\nRetry?".format(response)):
             response = account.verify(a)
         else:
-            raise Exception("User abort on Jodel Account verification.")
+            sys.exit()
     print("Done.")
     return JodelAcc(lat, lng, city, account.access_token, account.expiration_date, account.refresh_token,
                     account.distinct_id, account.device_uid, account.is_legacy)
 
 
-def get_data_Weather():
+def get_data_Weather(lat, lng):
     while True:
-        print("Input the data for the Wunderground weather API.\n")
-        API_KEY = input("API Key:\n")
-        COUNTRY = input("Country:\n")
-        CITY = input("City:\n")
-        CITY_code = check_weather(API_KEY, COUNTRY, CITY)
-        if CITY_code == False:
+        print("Input the data for the Accuweather weather API.\n")
+        api_key = input("API Key:\n")
+        location_code = check_weather(api_key, lat, lng)
+        if location_code == False:
             if y_n("Retry?") == False:
-                raise Exception("User abort on Weather Data select.")
+                sys.exit()
         else:
             break
-    return WeatherData(API_KEY=API_KEY, CITY_code=CITY_code)
+    return WeatherData(API_KEY=api_key, LOCATION_code=location_code)
+
+def check_weather(api_key, lat, lng):
+    response = requests.get(
+        "https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=%s&q=%s%%2C%s&details=false&toplevel=true" % (
+        api_key, lat, lng))
+    if response.status_code == 200:
+        response_json = response.json()
+    elif response.status_code == 401 or response.status_code == 403:
+        print("Invalid API Key, or the API Key doesn't have the necessary permissions.")
+        return False
+    else:
+        if y_n("Something went wrong. Retry?"):
+            return False
+        else:
+            sys.exit()
+
+    try:
+        if "Key" in response_json:
+            LOCATION_code = response_json["Key"]
+            print("Using %s (%s), %s as weather forecast location." % (response_json["EnglishName"], response_json["AdministrativeArea"]["EnglishName"], response_json["Country"]["EnglishName"]))
+            return LOCATION_code
+    except TypeError:
+        print("Got invalid data form weather provider.")
+        return False
 
 
 def get_data_Pollen():
@@ -145,40 +167,12 @@ def get_data_Pollen():
             else:
                 raise Exception("User abort on Pollen Data select.")
 
-
-def check_weather(API_KEY, COUNTRY, CITY):
-    response = requests.get("https://api.wunderground.com/api/%s/geolookup/q/%s/%s.json" % (API_KEY, COUNTRY, CITY))
-    response_json = response.json()
-    if "location" in response_json:
-        CITY_code = response_json["location"]["l"]
-        CITY_code = CITY_code[7:]
-        return CITY_code
-
-    if "error" in response_json["response"]:
-        if response_json["response"]["error"]["type"] == "keynotfound":
-            print("Invalid API Key!")
-            return False
-        elif response_json["response"]["error"]["type"] == "querynotfound":
-            print("City not found!")
-            return False
-
-    results_sorted = sorted(response_json["response"]["results"], key=itemgetter('country_name'))
-    if "results" in response_json["response"]:
-        results_num = 0
-        for item in results_sorted:
-            print("{0}. {1}, {2}, {3}".format(results_num, item["name"], item["state"], item["country_name"]))
-            results_num = results_num + 1
-        CITY_code = (results_sorted[int(input("Choose a city by typing it's number:\n"))])["zmw"]
-        return CITY_code
-
-    raise Exception("Got invalid data from Weather Provider.\nData:%s" % response_json)
-
 # Get account file name
 filename = input("Choose an account file name:\n")
 
 # Get Jodel, Weather and Pollen data
 JodelAccount = create_account()
-Weather = get_data_Weather()
+Weather = get_data_Weather(JodelAccount.lat, JodelAcc.lng)
 Pollen = get_data_Pollen()
 
 # Write Data to file
