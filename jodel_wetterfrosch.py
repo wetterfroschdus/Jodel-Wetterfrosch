@@ -27,7 +27,7 @@ args = parser.parse_args()
 # Object for storing the json data, which is read from the account file by read_data().
 class DataRead(object):
     def __init__(self, lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY,
-                 CITY, legacy, pollen_region, pollen_partregion):
+                 LOCATION, legacy, pollen_region, pollen_partregion):
         self.expiration_date = expiration_date
         self.distinct_id = distinct_id
         self.refresh_token = refresh_token
@@ -37,14 +37,14 @@ class DataRead(object):
         self.lng = lng
         self.city = city
         self.API_KEY = API_KEY
-        self.CITY = CITY
+        self.LOCATION = LOCATION
         self.legacy = legacy
         self.pollen_region = pollen_region
         self.pollen_partregion = pollen_partregion
 
 
 # create_data() turns the updated data into json format.
-def create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY,
+def create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, LOCATION,
                 legacy, pollen_region, pollen_partregion):
     file_data = {
         "lat": lat,
@@ -59,14 +59,14 @@ def create_data(lat, lng, city, access_token, expiration_date, refresh_token, di
         "pollen_region": pollen_region,
         "pollen_partregion": pollen_partregion,
         "API_KEY": API_KEY,
-        "CITY": CITY
+        "LOCATION": LOCATION
     }
     return file_data
 
 
 # refresh_access() takes the Jodel account and refreshes the access token.
 # It will then write the data back to the account file.
-def refresh_access(account, lat, lng, city, API_KEY, CITY, legacy, pollen_region, pollen_partregion, filename):
+def refresh_access(account, lat, lng, city, API_KEY, LOCATION, legacy, pollen_region, pollen_partregion, filename):
     account.refresh_access_token()
     refreshed_account = account.get_account_data()
     expiration_date = refreshed_account["expiration_date"]
@@ -75,7 +75,7 @@ def refresh_access(account, lat, lng, city, API_KEY, CITY, legacy, pollen_region
     device_uid = refreshed_account["device_uid"]
     access_token = refreshed_account["access_token"]
     filedata = create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY,
-                CITY, legacy, pollen_region, pollen_partregion)
+                LOCATION, legacy, pollen_region, pollen_partregion)
     write_data(filedata, filename)
 
 
@@ -102,9 +102,9 @@ def read_data(filename):
     pollen_region = file_data["pollen_region"]
     pollen_partregion = file_data["pollen_partregion"]
     API_KEY = file_data["API_KEY"]
-    CITY = file_data["CITY"]
+    LOCATION = file_data["LOCATION"]
     return DataRead(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY,
-                    CITY, legacy, pollen_region, pollen_partregion)
+                    LOCATION, legacy, pollen_region, pollen_partregion)
 
 
 # replaceEast() replaces "E" with "O" in strings.
@@ -164,11 +164,9 @@ def getPostData(queue1, data):
     emojis["sleet"] = "❄🌧"
     emojis["chancesleet"] = "vielleicht ❄🌧"
 
-    # Get data from wunderground api.
-    response = requests.get('https://api.wunderground.com/api/%s/forecast/q/zmw:%s.json' % (data.API_KEY, data.CITY))
+    # Get data from accuweather api.
+    response = requests.get('https://dataservice.accuweather.com/forecasts/v1/daily/1day/%s?apikey=%s&language=de-de&details=true&metric=true' % (location, api_key))
     response_json = response.json()
-    response = requests.get('https://api.wunderground.com/api/%s/astronomy/q/zmw:%s.json' % (data.API_KEY, data.CITY))
-    dayl_response_json = response.json()
 
     # Translating the weekday using a dict.
     weekdays = {"Mon": "Montag", "Tue": "Dienstag", "Wed": "Mittwoch", "Thu": "Donnerstag", "Fri": "Freitag",
@@ -342,7 +340,7 @@ if __name__=='__main__':
         update_location=False)
 
     # Refreshes access using refresh_access(), which also writes the new tokens back to the account file.
-    refresh_access(account, data.lat, data.lng, data.city, data.API_KEY, data.CITY, data.legacy, data.pollen_region,
+    refresh_access(account, data.lat, data.lng, data.city, data.API_KEY, data.LOCATION, data.legacy, data.pollen_region,
                    data.pollen_partregion, args.account)
 
     time.sleep(5)
