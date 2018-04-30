@@ -255,7 +255,7 @@ def getPollenPostData(queue2, data):
     # This happens using the PollenPostData_too_long variable and the splitdict() function.
     # If the post would be too long, we set PollenPostData_too_long to True and split the dict into two.
     # The split dicts are stored in "pollen" as a tuple.
-    # We go over the pollen dict (or dicts) and append the strings to a list, which we the join to our finalized post string.
+    # We go over the pollen dict (or dicts) and append the strings to a list, which we then join to our finalized post string.
     # In the case of more than 5 entries in the pollen dict,
     # the PollenPostData variable will be list of two strings, not a string.
     if len(pollen) == 0:
