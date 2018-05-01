@@ -8,9 +8,9 @@
 ```
 git clone https://github.com/wetterfroschdus/Jodel-Wetterfrosch.git
 ```
-- Install the requirement: [jodel_api](https://github.com/nborrmann/jodel_api/)!
+- Install the requirements: [jodel_api](https://github.com/nborrmann/jodel_api/) and [dateutil](https://dateutil.readthedocs.io/en/stable/)
 ```
-pip install jodel_api
+pip install jodel_api python-dateutil
 ```
 #### [jodel_api](https://github.com/nborrmann/jodel_api/) by [nborrmann](https://github.com/nborrmann) is not updated with new HMAC keys from new Jodel versions anymore, so it won't work. There's still a way to get the keys, just google around a bit. 😉 
 
