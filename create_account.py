@@ -95,7 +95,7 @@ def create_account():
 
     # Try to verify account
     print("Verifying account...")
-    if y_n("Do you have an android account? (android_id and security_token)?\nTis will increase the success chance of the verification."):
+    if y_n("Do you have an android account? (android_id and security_token)?\nThis will increase the success chance of the verification."):
         android_id = int(input("android_id:\n"))
         security_token = int(input("security_token:\n"))
         a = jodel_api.AndroidAccount(android_id, security_token)
