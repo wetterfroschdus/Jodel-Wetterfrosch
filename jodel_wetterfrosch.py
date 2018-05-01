@@ -9,7 +9,6 @@ import time
 import argparse
 import os
 from multiprocessing import Process, Queue
-import dateutil.parser
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -28,7 +27,7 @@ args = parser.parse_args()
 # Object for storing the json data, which is read from the account file by read_data().
 class DataRead(object):
     def __init__(self, lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY,
-                 LOCATION, legacy, pollen_region, pollen_partregion):
+                 CITY, legacy, pollen_region, pollen_partregion):
         self.expiration_date = expiration_date
         self.distinct_id = distinct_id
         self.refresh_token = refresh_token
@@ -38,14 +37,14 @@ class DataRead(object):
         self.lng = lng
         self.city = city
         self.API_KEY = API_KEY
-        self.LOCATION = LOCATION
+        self.CITY = CITY
         self.legacy = legacy
         self.pollen_region = pollen_region
         self.pollen_partregion = pollen_partregion
 
 
 # create_data() turns the updated data into json format.
-def create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, LOCATION,
+def create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY, CITY,
                 legacy, pollen_region, pollen_partregion):
     file_data = {
         "lat": lat,
@@ -60,7 +59,7 @@ def create_data(lat, lng, city, access_token, expiration_date, refresh_token, di
         "pollen_region": pollen_region,
         "pollen_partregion": pollen_partregion,
         "API_KEY": API_KEY,
-        "LOCATION": LOCATION
+        "CITY": CITY
     }
     return file_data
 
@@ -78,11 +77,10 @@ def refresh_access(account, file_data, filename):
     access_token = refreshed_account["access_token"]
 
     filedata = create_data(file_data.lat, file_data.lng, file_data.city, access_token, expiration_date, refresh_token,
-                            distinct_id, device_uid, file_data.API_KEY, file_data.LOCATION, file_data.legacy,
+                            distinct_id, device_uid, file_data.API_KEY, file_data.CITY, file_data.legacy,
                              file_data.pollen_region, file_data.pollen_partregion)
 
     write_data(filedata, filename)
-
 
 # refresh_all() initializes the Jodel account without remote calls and refreshes all tokens.
 # It will then write the data back to the account file and return the Jodel account.
@@ -116,7 +114,6 @@ def refresh_all(file_data, filename):
 
     return jodel_account
 
-
 # write_data() writes the json data to the account file.
 def write_data(file_data, file_name):
     with open(file_name, 'w') as outfile:
@@ -140,9 +137,9 @@ def read_data(filename):
     pollen_region = file_data["pollen_region"]
     pollen_partregion = file_data["pollen_partregion"]
     API_KEY = file_data["API_KEY"]
-    LOCATION = file_data["LOCATION"]
+    CITY = file_data["CITY"]
     return DataRead(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY,
-                    LOCATION, legacy, pollen_region, pollen_partregion)
+                    CITY, legacy, pollen_region, pollen_partregion)
 
 
 # replaceEast() replaces "E" with "O" in strings.
@@ -179,66 +176,94 @@ def splitdict(orig):
     return dict1, dict2
 
 
-def getPostData(queue1, API_KEY, LOCATION):
-    # Tuple of weather conditions and their emojis.
-    emojis = (
-    '☀️', '🌤️', '🌤️', '⛅', '🌫☀️', '🌥️', '☁️', '☁️', '🌫️', '🌧️', '🌦️', '🌦️', '⛈️', '🌦️⚡', '🌦️ ⚡', '🌧️', '☁️',
-    '🌥️', '🌤️', '🌨️', '🌥️🌨️', '❄🌨️', '❄🌨️', '❄🌧️', '🌧️🌨️', '🔥', '❄️', '🌬️')
+def getPostData(queue1, API_KEY, CITY):
+    # Dict of weather conditions and their emojis.
+    emojis = dict()
+    emojis["clear"] = "🌞"
+    emojis["sunny"] = "🌞"
+    emojis["hazy"] = "🌫🌞"
+    emojis["fog"] = "🌫"
+    emojis["cloudy"] = "☁"
+    emojis["partlycloudy"] = "⛅"
+    emojis["partlysunny"] = "⛅"
+    emojis["mostlysunny"] = "🌤"
+    emojis["mostlycloudy"] = "🌥"
+    emojis["chancerain"] = "🌦"
+    emojis["rain"] = "🌧"
+    emojis["flurries"] = "🌨"
+    emojis["snow"] = "🌨"
+    emojis["chancesnow"] = "vielleicht 🌨"
+    emojis["chanceflurries"] = "vielleicht 🌨"
+    emojis["tstorms"] = "⛈"
+    emojis["chancetstorms"] = "vielleicht ⛈"
+    emojis["sleet"] = "❄🌧"
+    emojis["chancesleet"] = "vielleicht ❄🌧"
 
-    # Get data from accuweather api.
-    response = requests.get(
-        'https://dataservice.accuweather.com/forecasts/v1/daily/1day/%s?apikey=%s&language=de-de&details=true&metric=true' % (
-            LOCATION, API_KEY))
+    # Get data from wunderground api.
+    response = requests.get('https://api.wunderground.com/api/%s/forecast/q/zmw:%s.json' % (API_KEY, CITY))
     response_json = response.json()
+    response = requests.get('https://api.wunderground.com/api/%s/astronomy/q/zmw:%s.json' % (API_KEY, CITY))
+    dayl_response_json = response.json()
 
-    # Get the weekday using a tuple.
-    day_data = dateutil.parser.parse(response_json['DailyForecasts'][0]['Date'])
-    weekdays = ('Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag')
+    # Translating the weekday using a dict.
+    weekdays = {"Mon": "Montag", "Tue": "Dienstag", "Wed": "Mittwoch", "Thu": "Donnerstag", "Fri": "Freitag",
+                "Sat": "Samstag", "Sun": "Sonntag"}
+    day = weekdays[response_json['forecast']['simpleforecast']['forecastday'][0]['date']['weekday_short']]
 
-    day = weekdays[day_data.weekday()]
-    date = '%s.%s.%s' % (day_data.day, day_data.month, day_data.year)
+    d = response_json['forecast']['simpleforecast']['forecastday'][0]['date']['day']
+    m = response_json['forecast']['simpleforecast']['forecastday'][0]['date']['month']
+    y = response_json['forecast']['simpleforecast']['forecastday'][0]['date']['year']
+    date = "%s.%s.%s" % (d, m, y)
 
-    sunrise = dateutil.parser.parse(response_json['DailyForecasts'][0]['Sun']['Rise'])
-    sunrise = '%s:%s' % (sunrise.hour, sunrise.minute)
+    h = dayl_response_json['sun_phase']['sunrise']['hour']
+    m = dayl_response_json['sun_phase']['sunrise']['minute']
+    sunrise = "%s:%s" % (h, m)
 
-    sun_hours = response_json['DailyForecasts'][0]['HoursOfSun']
-    sun_hours_int = int(sun_hours)
-    if sun_hours == sun_hours_int:
-        sun_hours = sun_hours_int
-    else:
-        sun_hours = str(sun_hours).replace('.', ',')
+    h = dayl_response_json['sun_phase']['sunset']['hour']
+    m = dayl_response_json['sun_phase']['sunset']['minute']
+    sunset = "%s:%s" % (h, m)
 
-    sunset = dateutil.parser.parse(response_json['DailyForecasts'][0]['Sun']['Set'])
-    sunset = '%s:%s' % (sunset.hour, sunset.minute)
+    highTemp = response_json['forecast']['simpleforecast']['forecastday'][0]['high']['celsius']
+    lowTemp = response_json['forecast']['simpleforecast']['forecastday'][0]['low']['celsius']
 
-    highTemp = str(response_json['DailyForecasts'][0]['Temperature']['Minimum']['Value']).replace('.', ',')
-    lowTemp = str(response_json['DailyForecasts'][0]['Temperature']['Maximum']['Value']).replace('.', ',')
+    maxWind = response_json['forecast']['simpleforecast']['forecastday'][0]['maxwind']['kph']
+    maxWindDir = response_json['forecast']['simpleforecast']['forecastday'][0]['maxwind']['dir']
+    aveWind = response_json['forecast']['simpleforecast']['forecastday'][0]['avewind']['kph']
+    aveWindDir = response_json['forecast']['simpleforecast']['forecastday'][0]['avewind']['dir']
 
-    maxWind = str(response_json['DailyForecasts'][0]['Day']['WindGust']['Speed']['Value']).replace('.', ',')
-    maxWindDir = response_json['DailyForecasts'][0]['Day']['WindGust']['Direction']['English']
-    aveWind = str(response_json['DailyForecasts'][0]['Day']['Wind']['Speed']['Value']).replace('.', ',')
-    aveWindDir = response_json['DailyForecasts'][0]['Day']['Wind']['Direction']['English']
+    # Shorten direction using a dict if necessary.
+    dirs_short = dict(North="N", South="S", West="W", East="E", Variable=" ")
+    try:
+        maxWindDir = dirs_short[maxWindDir]
+    except KeyError:
+        pass
+
+    try:
+        aveWindDir = dirs_short[aveWindDir]
+    except KeyError:
+        pass
 
     # Replace "E" with "O" for "translation".
     maxWindDir = replaceEast(maxWindDir)
     aveWindDir = replaceEast(aveWindDir)
 
-    chanceofrain = response_json['DailyForecasts'][0]['Day']['PrecipitationProbability']
+    aveHumidity = response_json['forecast']['simpleforecast']['forecastday'][0]['avehumidity']
+    chanceofrain = response_json['forecast']['simpleforecast']['forecastday'][0]['pop']
 
-    conditions = response_json['DailyForecasts'][0]['Day']['Icon']
-    WeatherEmoji = emojis[conditions - 1]
+    conditions = response_json['forecast']['simpleforecast']['forecastday'][0]['icon']
+
+    WeatherEmoji = emojis[conditions]
 
     # Create the Jodel post string.
-    PostData = '++++Wetterjodel++++\nGuten Morgen! Am heutigen {0}, den {1} wirds {2}!\n📈 {3}°C     📉 {4}°C\n🌄 {5}     🌅 {6}\n☔ {8}%     ☀️⌚ {7} Std.\n🌬 {9} {10} km/h\n💨 {11} {12} km/h\nEuer #Wetter🐸'.format(
-        day, date, WeatherEmoji, highTemp, lowTemp, sunrise, sunset, sun_hours, chanceofrain, aveWindDir, aveWind,
+    PostData = "++++Wetterjodel++++\nGuten Morgen! Am heutigen {0}, den {1} gibts {2}!\n📈 {3}°C     📉 {4}°C\n🌄 {5}     🌅 {6}\n☔ {7}%     💦 {8}%\n🌬 {9} {10} km/h\n💨 {11} {12} km/h\nEuer #Wetter🐸".format(
+        day, date, WeatherEmoji, highTemp, lowTemp, sunrise, sunset, chanceofrain, aveHumidity, aveWindDir, aveWind,
         maxWindDir, maxWind)
-    logger.info('PostData is: %s', PostData.encode(encoding='utf_8', errors='replace'))
+    logger.info("PostData is: %s", PostData.encode(encoding='utf_8', errors='replace'))
     queue1.put(PostData)
 
-
-def getPollenPostData(queue2, region, partregion):
+def getPollenPostData(queue2, pollen_region, pollen_partregion):
     # Get pollen data for region using sift_pollen_data()
-    pollen_for_region = sift_pollen_data(region, partregion)
+    pollen_for_region = sift_pollen_data(pollen_region, pollen_partregion)
 
     # Checks if there is useful information on the possible pollen types.
     # Not useful: "-1" -> No pollen data, "0" -> No pollination.
@@ -333,8 +358,7 @@ if __name__=='__main__':
     # Simultanious processing of the post strings.
     queue1 = Queue()
     queue2 = Queue()
-
-    Process(target = getPostData, args = (queue1, data.API_KEY, data.LOCATION)).start()
+    Process(target = getPostData, args = (queue1, data.API_KEY, data.CITY)).start()
     Process(target = getPollenPostData, args = (queue2, data.pollen_region, data.pollen_partregion)).start()
     PostData = queue1.get()
     PollenPostData = queue2.get()
@@ -362,6 +386,7 @@ if __name__=='__main__':
         epoch_time = int(time.time()) - 300
         if epoch_time > data.expiration_date:
             refresh_access(account, data, args.account)
+
 
     # Wait a few seconds before posting.
     time.sleep(5)
