@@ -141,7 +141,7 @@ def splitdict(orig):
     return dict1, dict2
 
 
-def getPostData(queue1, data):
+def getPostData(queue1, API_KEY, CITY):
     # Dict of weather conditions and their emojis.
     emojis = dict()
     emojis["clear"] = "🌞"
@@ -165,9 +165,9 @@ def getPostData(queue1, data):
     emojis["chancesleet"] = "vielleicht ❄🌧"
 
     # Get data from wunderground api.
-    response = requests.get('https://api.wunderground.com/api/%s/forecast/q/zmw:%s.json' % (data.API_KEY, data.CITY))
+    response = requests.get('https://api.wunderground.com/api/%s/forecast/q/zmw:%s.json' % (API_KEY, CITY))
     response_json = response.json()
-    response = requests.get('https://api.wunderground.com/api/%s/astronomy/q/zmw:%s.json' % (data.API_KEY, data.CITY))
+    response = requests.get('https://api.wunderground.com/api/%s/astronomy/q/zmw:%s.json' % (API_KEY, CITY))
     dayl_response_json = response.json()
 
     # Translating the weekday using a dict.
@@ -226,9 +226,9 @@ def getPostData(queue1, data):
     logger.info("PostData is: %s", PostData.encode(encoding='utf_8', errors='replace'))
     queue1.put(PostData)
 
-def getPollenPostData(queue2, data):
+def getPollenPostData(queue2, pollen_region, pollen_partregion):
     # Get pollen data for region using sift_pollen_data()
-    pollen_for_region = sift_pollen_data(data.pollen_region, data.pollen_partregion)
+    pollen_for_region = sift_pollen_data(pollen_region, pollen_partregion)
 
     # Checks if there is useful information on the possible pollen types.
     # Not useful: "-1" -> No pollen data, "0" -> No pollination.
@@ -323,8 +323,8 @@ if __name__=='__main__':
     # Simultanious processing of the post strings.
     queue1 = Queue()
     queue2 = Queue()
-    Process(target = getPostData, args = (queue1, data)).start()
-    Process(target = getPollenPostData, args = (queue2, data)).start()
+    Process(target = getPostData, args = (queue1, data.API_KEY, data.CITY)).start()
+    Process(target = getPollenPostData, args = (queue2, data.pollen_region, data.pollen_partregion)).start()
     PostData = queue1.get()
     PollenPostData = queue2.get()
 
