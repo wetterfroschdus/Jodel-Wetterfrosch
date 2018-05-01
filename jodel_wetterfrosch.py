@@ -109,7 +109,7 @@ def refresh_all(file_data, filename):
     access_token = refreshed_account["access_token"]
 
     filedata = create_data(file_data.lat, file_data.lng, file_data.city, access_token, expiration_date, refresh_token,
-                distinct_id, device_uid, file_data.API_KEY, file_data.CITY, file_data.legacy, file_data.pollen_region,
+                distinct_id, device_uid, file_data.API_KEY, file_data.LOCATION, file_data.legacy, file_data.pollen_region,
                  file_data.pollen_partregion)
 
     write_data(filedata, filename)
