@@ -155,6 +155,32 @@ def replaceEast(string):
     return "".join(chars)
 
 
+# convertTokmh() takes a velocity and it's unit and returns the velocity in km/h.
+# unit codes are defined as per accuweather api unit types
+def convertTokmh(speed, unit):
+    if unit == 7:
+        return speed
+    elif unit == 8:
+        return speed * 1.852
+    elif unit == 9:
+        return speed * 1.609344
+    elif unit == 10:
+        return speed * 3.6
+    else:
+        logger.error('Speed in undefinded unit!')
+        raise Exception('Speed in undefinded unit!')
+
+
+# convertNumberToString() takes any number and converts it into a string.
+# It will eliminate trailing zeros and add a comma instead of a period.
+def convertNumberToString(number):
+    number_float = float(number)
+    if number_float.is_integer():
+        return str(int(number_float))
+    else:
+        return str(number_float).replace('.', ',')
+
+
 # sift_pollen_data() goes through the pollen data from DWD and only returns the data for the specified region/subregion.
 def sift_pollen_data(region, partregion):
     pollen_data = json.loads(
@@ -165,7 +191,7 @@ def sift_pollen_data(region, partregion):
             return pollen_data["content"][x]["Pollen"]
 
 
-# splitdict() splits one dict into two dicts, whilst the first dict won't have more than 5 entries. Returns a tuple
+# splitdict() splits one dict into two dicts, whilst the first dict won't have more than 5 entries. Returns a tuple.
 def splitdict(orig):
     dict1 = dict()
     dict2 = dict()
@@ -182,8 +208,9 @@ def splitdict(orig):
 def getPostData(queue1, API_KEY, LOCATION):
     # Tuple of weather conditions and their emojis.
     emojis = (
-    '☀️', '🌤️', '🌤️', '⛅', '🌫☀️', '🌥️', '☁️', '☁️', '🌫️', '🌧️', '🌦️', '🌦️', '⛈️', '🌦️⚡', '🌦️ ⚡', '🌧️', '☁️',
-    '🌥️', '🌤️', '🌨️', '🌥️🌨️', '❄🌨️', '❄🌨️', '❄🌧️', '🌧️🌨️', '🔥', '❄️', '🌬️')
+        '☀️', '🌤️', '🌤️', '⛅', '🌫☀️', '🌥️', '☁️', '☁️', '🌫️', '🌧️', '🌦️', '🌦️', '⛈️', '🌦️⚡', '🌦️ ⚡', '🌧️',
+        '☁️',
+        '🌥️', '🌤️', '🌨️', '🌥️🌨️', '❄🌨️', '❄🌨️', '❄🌧️', '🌧️🌨️', '🔥', '❄️', '🌬️')
 
     # Get data from accuweather api.
     response = requests.get(
@@ -201,22 +228,22 @@ def getPostData(queue1, API_KEY, LOCATION):
     sunrise = dateutil.parser.parse(response_json['DailyForecasts'][0]['Sun']['Rise'])
     sunrise = '%s:%s' % (sunrise.hour, sunrise.minute)
 
-    sun_hours = response_json['DailyForecasts'][0]['HoursOfSun']
-    sun_hours_int = int(sun_hours)
-    if sun_hours == sun_hours_int:
-        sun_hours = sun_hours_int
-    else:
-        sun_hours = str(sun_hours).replace('.', ',')
+    sun_hours = convertNumberToString(response_json['DailyForecasts'][0]['HoursOfSun'])
 
     sunset = dateutil.parser.parse(response_json['DailyForecasts'][0]['Sun']['Set'])
     sunset = '%s:%s' % (sunset.hour, sunset.minute)
 
-    highTemp = str(response_json['DailyForecasts'][0]['Temperature']['Minimum']['Value']).replace('.', ',')
-    lowTemp = str(response_json['DailyForecasts'][0]['Temperature']['Maximum']['Value']).replace('.', ',')
+    highTemp = convertNumberToString(response_json['DailyForecasts'][0]['Temperature']['Minimum']['Value'])
+    lowTemp = convertNumberToString(response_json['DailyForecasts'][0]['Temperature']['Maximum']['Value'])
 
-    maxWind = str(response_json['DailyForecasts'][0]['Day']['WindGust']['Speed']['Value']).replace('.', ',')
+    maxWind = convertTokmh(response_json['DailyForecasts'][0]['Day']['WindGust']['Speed']['Value'],
+                           response_json['DailyForecasts'][0]['Day']['WindGust']['Speed']['UnitType'])
+    maxWind = convertNumberToString(maxWind)
+    aveWind = convertTokmh(response_json['DailyForecasts'][0]['Day']['Wind']['Speed']['Value'],
+                           response_json['DailyForecasts'][0]['Day']['Wind']['Speed']['UnitType'])
+    aveWind = convertNumberToString(aveWind)
+
     maxWindDir = response_json['DailyForecasts'][0]['Day']['WindGust']['Direction']['English']
-    aveWind = str(response_json['DailyForecasts'][0]['Day']['Wind']['Speed']['Value']).replace('.', ',')
     aveWindDir = response_json['DailyForecasts'][0]['Day']['Wind']['Direction']['English']
 
     # Replace "E" with "O" for "translation".
@@ -229,8 +256,8 @@ def getPostData(queue1, API_KEY, LOCATION):
     WeatherEmoji = emojis[conditions - 1]
 
     # Create the Jodel post string.
-    PostData = '++++Wetterjodel++++\nGuten Morgen! Am heutigen {0}, den {1} wirds {2}!\n📈 {3}°C     📉 {4}°C\n🌄 {5}     🌅 {6}\n☔ {8}%     ☀️⌚ {7} Std.\n🌬 {9} {10} km/h\n💨 {11} {12} km/h\nEuer #Wetter🐸'.format(
-        day, date, WeatherEmoji, highTemp, lowTemp, sunrise, sunset, sun_hours, chanceofrain, aveWindDir, aveWind,
+    PostData = '++++Wetterjodel++++\nGuten Morgen! Am heutigen {0}, den {1} wirds {2}!\n📈 {3}°C     📉 {4}°C\n🌄 {5}     🌅 {6}\n☔ {7}%     ☀️⌚ {8} Std.\n🌬 {9} {10} km/h\n💨 {11} {12} km/h\nEuer #Wetter🐸'.format(
+        day, date, WeatherEmoji, highTemp, lowTemp, sunrise, sunset, chanceofrain, sun_hours, aveWindDir, aveWind,
         maxWindDir, maxWind)
     logger.info('PostData is: %s', PostData.encode(encoding='utf_8', errors='replace'))
     queue1.put(PostData)
