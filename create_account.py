@@ -91,7 +91,7 @@ def create_account():
             if y_n("Something went wrong. Retry?"):
                 pass
             else:
-                raise Exception("User abort on Jodel Account creation.")
+                sys.exit()
 
     # Try to verify account
     print("Verifying account...")
@@ -107,7 +107,7 @@ def create_account():
         if y_n("Couldn't verify account.\nServer response was: {0}\nRetry?".format(response)):
             response = account.verify(a)
         else:
-            raise Exception("User abort on Jodel Account verification.")
+            sys.exit()
     print("Done.")
     return JodelAcc(lat, lng, city, account.access_token, account.expiration_date, account.refresh_token,
                     account.distinct_id, account.device_uid, account.is_legacy)
@@ -122,7 +122,7 @@ def get_data_Weather():
         CITY_code = check_weather(API_KEY, COUNTRY, CITY)
         if CITY_code == False:
             if y_n("Retry?") == False:
-                raise Exception("User abort on Weather Data select.")
+                sys.exit()
         else:
             break
     return WeatherData(API_KEY=API_KEY, CITY_code=CITY_code)
@@ -149,7 +149,7 @@ def get_data_Pollen():
             if y_n("Retry?"):
                 pass
             else:
-                raise Exception("User abort on Pollen Data select.")
+                sys.exit()
 
 
 def check_weather(API_KEY, COUNTRY, CITY):
