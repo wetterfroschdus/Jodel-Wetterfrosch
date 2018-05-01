@@ -171,7 +171,7 @@ def get_data_Pollen():
             if y_n("Retry?"):
                 pass
             else:
-                raise Exception("User abort on Pollen Data select.")
+                sys.exit()
 
 # Get account file name
 filename = input("Choose an account file name:\n")
