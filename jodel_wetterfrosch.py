@@ -67,17 +67,54 @@ def create_data(lat, lng, city, access_token, expiration_date, refresh_token, di
 
 # refresh_access() takes the Jodel account and refreshes the access token.
 # It will then write the data back to the account file.
-def refresh_access(account, lat, lng, city, API_KEY, LOCATION, legacy, pollen_region, pollen_partregion, filename):
+def refresh_access(account, file_data, filename):
     account.refresh_access_token()
+
     refreshed_account = account.get_account_data()
     expiration_date = refreshed_account["expiration_date"]
     distinct_id = refreshed_account["distinct_id"]
     refresh_token = refreshed_account["refresh_token"]
     device_uid = refreshed_account["device_uid"]
     access_token = refreshed_account["access_token"]
-    filedata = create_data(lat, lng, city, access_token, expiration_date, refresh_token, distinct_id, device_uid, API_KEY,
-                LOCATION, legacy, pollen_region, pollen_partregion)
+
+    filedata = create_data(file_data.lat, file_data.lng, file_data.city, access_token, expiration_date, refresh_token,
+                            distinct_id, device_uid, file_data.API_KEY, file_data.LOCATION, file_data.legacy,
+                             file_data.pollen_region, file_data.pollen_partregion)
+
     write_data(filedata, filename)
+
+
+# refresh_all() initializes the Jodel account without remote calls and refreshes all tokens.
+# It will then write the data back to the account file and return the Jodel account.
+def refresh_all(file_data, filename):
+    jodel_account = jodel_api.JodelAccount(
+        lat=file_data.lat,
+        lng=file_data.lng,
+        city=file_data.city,
+        access_token=file_data.access_token,
+        expiration_date=file_data.expiration_date,
+        refresh_token=file_data.refresh_token,
+        distinct_id=file_data.distinct_id,
+        device_uid=file_data.device_uid,
+        is_legacy=file_data.legacy,
+        update_location=False)
+
+    jodel_account.refresh_all_tokens()
+
+    refreshed_account = jodel_account.get_account_data()
+    expiration_date = refreshed_account["expiration_date"]
+    distinct_id = refreshed_account["distinct_id"]
+    refresh_token = refreshed_account["refresh_token"]
+    device_uid = refreshed_account["device_uid"]
+    access_token = refreshed_account["access_token"]
+
+    filedata = create_data(file_data.lat, file_data.lng, file_data.city, access_token, expiration_date, refresh_token,
+                distinct_id, device_uid, file_data.API_KEY, file_data.CITY, file_data.legacy, file_data.pollen_region,
+                 file_data.pollen_partregion)
+
+    write_data(filedata, filename)
+
+    return jodel_account
 
 
 # write_data() writes the json data to the account file.
@@ -198,6 +235,7 @@ def getPostData(queue1, API_KEY, LOCATION):
     logger.info('PostData is: %s', PostData.encode(encoding='utf_8', errors='replace'))
     queue1.put(PostData)
 
+
 def getPollenPostData(queue2, region, partregion):
     # Get pollen data for region using sift_pollen_data()
     pollen_for_region = sift_pollen_data(region, partregion)
@@ -295,27 +333,37 @@ if __name__=='__main__':
     # Simultanious processing of the post strings.
     queue1 = Queue()
     queue2 = Queue()
+
     Process(target = getPostData, args = (queue1, data.API_KEY, data.LOCATION)).start()
     Process(target = getPollenPostData, args = (queue2, data.pollen_region, data.pollen_partregion)).start()
     PostData = queue1.get()
     PollenPostData = queue2.get()
 
     # Initializes the Jodel account.
-    account = jodel_api.JodelAccount(
-        lat=data.lat,
-        lng=data.lng,
-        city=data.city,
-        access_token=data.access_token,
-        expiration_date=data.expiration_date,
-        refresh_token=data.refresh_token,
-        distinct_id=data.distinct_id,
-        device_uid=data.device_uid,
-        is_legacy=data.legacy)
+    try:
+        account = jodel_api.JodelAccount(
+            lat=data.lat,
+            lng=data.lng,
+            city=data.city,
+            access_token=data.access_token,
+            expiration_date=data.expiration_date,
+            refresh_token=data.refresh_token,
+            distinct_id=data.distinct_id,
+            device_uid=data.device_uid,
+            is_legacy=data.legacy)
+    except Exception as Ex:
+        if Ex.args[0] == "Error updating location: (401, 'Unauthorized')":
+            account = refresh_all(data, args.account)
+        else:
+            raise Ex
+    else:
+        # Refresh access using refresh_access(), which also writes the new tokens back to the account file.
+        # But only if the access_token has expired or will expire within the next 5 minutes.
+        epoch_time = int(time.time()) - 300
+        if epoch_time > data.expiration_date:
+            refresh_access(account, data, args.account)
 
-    # Refreshes access using refresh_access(), which also writes the new tokens back to the account file.
-    refresh_access(account, data.lat, data.lng, data.city, data.API_KEY, data.LOCATION, data.legacy, data.pollen_region,
-                   data.pollen_partregion, args.account)
-
+    # Wait a few seconds before posting.
     time.sleep(5)
 
     # Try to post the Weather Jodel two times, if it fails, raise an exception.
@@ -327,6 +375,7 @@ if __name__=='__main__':
             logger.error("Weather post could not be sent! Raising Exception")
             raise Exception("Weather post could not be sent!")
 
+    # Wait a few seconds between posts.
     time.sleep(5)
 
     # Try to post the Pollen comment two times, if it fails, raise an exception.
