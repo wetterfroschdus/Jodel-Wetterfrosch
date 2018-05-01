@@ -82,7 +82,7 @@ def refresh_access(account, file_data, filename):
 
     write_data(filedata, filename)
 
-# refresh_all() takes the Jodel account and refreshes all tokens.
+# refresh_all() initializes the Jodel account without remote calls and refreshes all tokens.
 # It will then write the data back to the account file and return the Jodel account.
 def refresh_all(file_data, filename):
     jodel_account = jodel_api.JodelAccount(
