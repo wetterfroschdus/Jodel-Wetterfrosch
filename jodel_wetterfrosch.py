@@ -9,6 +9,7 @@ import time
 import argparse
 import os
 from multiprocessing import Process, Queue
+import dateutil.parser
 
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -141,92 +142,65 @@ def splitdict(orig):
     return dict1, dict2
 
 
-def getPostData(queue1, data):
-    # Dict of weather conditions and their emojis.
-    emojis = dict()
-    emojis["clear"] = "🌞"
-    emojis["sunny"] = "🌞"
-    emojis["hazy"] = "🌫🌞"
-    emojis["fog"] = "🌫"
-    emojis["cloudy"] = "☁"
-    emojis["partlycloudy"] = "⛅"
-    emojis["partlysunny"] = "⛅"
-    emojis["mostlysunny"] = "🌤"
-    emojis["mostlycloudy"] = "🌥"
-    emojis["chancerain"] = "🌦"
-    emojis["rain"] = "🌧"
-    emojis["flurries"] = "🌨"
-    emojis["snow"] = "🌨"
-    emojis["chancesnow"] = "vielleicht 🌨"
-    emojis["chanceflurries"] = "vielleicht 🌨"
-    emojis["tstorms"] = "⛈"
-    emojis["chancetstorms"] = "vielleicht ⛈"
-    emojis["sleet"] = "❄🌧"
-    emojis["chancesleet"] = "vielleicht ❄🌧"
+def getPostData(queue1, API_KEY, LOCATION):
+    # Tuple of weather conditions and their emojis.
+    emojis = (
+    '☀️', '🌤️', '🌤️', '⛅', '🌫☀️', '🌥️', '☁️', '☁️', '🌫️', '🌧️', '🌦️', '🌦️', '⛈️', '🌦️⚡', '🌦️ ⚡', '🌧️', '☁️',
+    '🌥️', '🌤️', '🌨️', '🌥️🌨️', '❄🌨️', '❄🌨️', '❄🌧️', '🌧️🌨️', '🔥', '❄️', '🌬️')
 
     # Get data from accuweather api.
-    response = requests.get('https://dataservice.accuweather.com/forecasts/v1/daily/1day/%s?apikey=%s&language=de-de&details=true&metric=true' % (location, api_key))
+    response = requests.get(
+        'https://dataservice.accuweather.com/forecasts/v1/daily/1day/%s?apikey=%s&language=de-de&details=true&metric=true' % (
+            LOCATION, API_KEY))
     response_json = response.json()
 
-    # Translating the weekday using a dict.
-    weekdays = {"Mon": "Montag", "Tue": "Dienstag", "Wed": "Mittwoch", "Thu": "Donnerstag", "Fri": "Freitag",
-                "Sat": "Samstag", "Sun": "Sonntag"}
-    day = weekdays[response_json['forecast']['simpleforecast']['forecastday'][0]['date']['weekday_short']]
+    # Get the weekday using a tuple.
+    day_data = dateutil.parser.parse(response_json['DailyForecasts'][0]['Date'])
+    weekdays = ('Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag')
 
-    d = response_json['forecast']['simpleforecast']['forecastday'][0]['date']['day']
-    m = response_json['forecast']['simpleforecast']['forecastday'][0]['date']['month']
-    y = response_json['forecast']['simpleforecast']['forecastday'][0]['date']['year']
-    date = "%s.%s.%s" % (d, m, y)
+    day = weekdays[day_data.weekday()]
+    date = '%s.%s.%s' % (day_data.day, day_data.month, day_data.year)
 
-    h = dayl_response_json['sun_phase']['sunrise']['hour']
-    m = dayl_response_json['sun_phase']['sunrise']['minute']
-    sunrise = "%s:%s" % (h, m)
+    sunrise = dateutil.parser.parse(response_json['DailyForecasts'][0]['Sun']['Rise'])
+    sunrise = '%s:%s' % (sunrise.hour, sunrise.minute)
 
-    h = dayl_response_json['sun_phase']['sunset']['hour']
-    m = dayl_response_json['sun_phase']['sunset']['minute']
-    sunset = "%s:%s" % (h, m)
+    sun_hours = response_json['DailyForecasts'][0]['HoursOfSun']
+    sun_hours_int = int(sun_hours)
+    if sun_hours == sun_hours_int:
+        sun_hours = sun_hours_int
+    else:
+        sun_hours = str(sun_hours).replace('.', ',')
 
-    highTemp = response_json['forecast']['simpleforecast']['forecastday'][0]['high']['celsius']
-    lowTemp = response_json['forecast']['simpleforecast']['forecastday'][0]['low']['celsius']
+    sunset = dateutil.parser.parse(response_json['DailyForecasts'][0]['Sun']['Set'])
+    sunset = '%s:%s' % (sunset.hour, sunset.minute)
 
-    maxWind = response_json['forecast']['simpleforecast']['forecastday'][0]['maxwind']['kph']
-    maxWindDir = response_json['forecast']['simpleforecast']['forecastday'][0]['maxwind']['dir']
-    aveWind = response_json['forecast']['simpleforecast']['forecastday'][0]['avewind']['kph']
-    aveWindDir = response_json['forecast']['simpleforecast']['forecastday'][0]['avewind']['dir']
+    highTemp = str(response_json['DailyForecasts'][0]['Temperature']['Minimum']['Value']).replace('.', ',')
+    lowTemp = str(response_json['DailyForecasts'][0]['Temperature']['Maximum']['Value']).replace('.', ',')
 
-    # Shorten direction using a dict if necessary.
-    dirs_short = dict(North="N", South="S", West="W", East="E", Variable=" ")
-    try:
-        maxWindDir = dirs_short[maxWindDir]
-    except KeyError:
-        pass
-
-    try:
-        aveWindDir = dirs_short[aveWindDir]
-    except KeyError:
-        pass
+    maxWind = str(response_json['DailyForecasts'][0]['Day']['WindGust']['Speed']['Value']).replace('.', ',')
+    maxWindDir = response_json['DailyForecasts'][0]['Day']['WindGust']['Direction']['English']
+    aveWind = str(response_json['DailyForecasts'][0]['Day']['Wind']['Speed']['Value']).replace('.', ',')
+    aveWindDir = response_json['DailyForecasts'][0]['Day']['Wind']['Direction']['English']
 
     # Replace "E" with "O" for "translation".
     maxWindDir = replaceEast(maxWindDir)
     aveWindDir = replaceEast(aveWindDir)
 
-    aveHumidity = response_json['forecast']['simpleforecast']['forecastday'][0]['avehumidity']
-    chanceofrain = response_json['forecast']['simpleforecast']['forecastday'][0]['pop']
+    chanceofrain = response_json['DailyForecasts'][0]['Day']['PrecipitationProbability']
 
-    conditions = response_json['forecast']['simpleforecast']['forecastday'][0]['icon']
-
-    WeatherEmoji = emojis[conditions]
+    conditions = response_json['DailyForecasts'][0]['Day']['Icon']
+    WeatherEmoji = emojis[conditions - 1]
 
     # Create the Jodel post string.
-    PostData = "++++Wetterjodel++++\nGuten Morgen! Am heutigen {0}, den {1} gibts {2}!\n📈 {3}°C     📉 {4}°C\n🌄 {5}     🌅 {6}\n☔ {7}%     💦 {8}%\n🌬 {9} {10} km/h\n💨 {11} {12} km/h\nEuer #Wetter🐸".format(
-        day, date, WeatherEmoji, highTemp, lowTemp, sunrise, sunset, chanceofrain, aveHumidity, aveWindDir, aveWind,
+    PostData = '++++Wetterjodel++++\nGuten Morgen! Am heutigen {0}, den {1} wirds {2}!\n📈 {3}°C     📉 {4}°C\n🌄 {5}     🌅 {6}\n☔ {8}%     ☀️⌚ {7} Std.\n🌬 {9} {10} km/h\n💨 {11} {12} km/h\nEuer #Wetter🐸'.format(
+        day, date, WeatherEmoji, highTemp, lowTemp, sunrise, sunset, sun_hours, chanceofrain, aveWindDir, aveWind,
         maxWindDir, maxWind)
-    logger.info("PostData is: %s", PostData.encode(encoding='utf_8', errors='replace'))
+    logger.info('PostData is: %s', PostData.encode(encoding='utf_8', errors='replace'))
     queue1.put(PostData)
 
-def getPollenPostData(queue2, data):
+def getPollenPostData(queue2, region, partregion):
     # Get pollen data for region using sift_pollen_data()
-    pollen_for_region = sift_pollen_data(data.pollen_region, data.pollen_partregion)
+    pollen_for_region = sift_pollen_data(region, partregion)
 
     # Checks if there is useful information on the possible pollen types.
     # Not useful: "-1" -> No pollen data, "0" -> No pollination.
@@ -321,8 +295,8 @@ if __name__=='__main__':
     # Simultanious processing of the post strings.
     queue1 = Queue()
     queue2 = Queue()
-    Process(target = getPostData, args = (queue1, data)).start()
-    Process(target = getPollenPostData, args = (queue2, data)).start()
+    Process(target = getPostData, args = (queue1, data.API_KEY, data.LOCATION)).start()
+    Process(target = getPollenPostData, args = (queue2, data.pollen_region, data.pollen_partregion)).start()
     PostData = queue1.get()
     PollenPostData = queue2.get()
 
@@ -336,8 +310,7 @@ if __name__=='__main__':
         refresh_token=data.refresh_token,
         distinct_id=data.distinct_id,
         device_uid=data.device_uid,
-        is_legacy=data.legacy,
-        update_location=False)
+        is_legacy=data.legacy)
 
     # Refreshes access using refresh_access(), which also writes the new tokens back to the account file.
     refresh_access(account, data.lat, data.lng, data.city, data.API_KEY, data.LOCATION, data.legacy, data.pollen_region,
