@@ -226,12 +226,12 @@ def getPostData(queue1, API_KEY, LOCATION):
     date = '%s.%s.%s' % (day_data.day, day_data.month, day_data.year)
 
     sunrise = dateutil.parser.parse(response_json['DailyForecasts'][0]['Sun']['Rise'])
-    sunrise = '%s:%s' % (sunrise.hour, sunrise.minute)
-
-    sun_hours = convertNumberToString(response_json['DailyForecasts'][0]['HoursOfSun'])
+    sunrise = sunrise.strftime('%H:%M')
 
     sunset = dateutil.parser.parse(response_json['DailyForecasts'][0]['Sun']['Set'])
-    sunset = '%s:%s' % (sunset.hour, sunset.minute)
+    sunset = sunset.strftime('%H:%M')
+
+    sun_hours = convertNumberToString(response_json['DailyForecasts'][0]['HoursOfSun'])
 
     highTemp = convertNumberToString(response_json['DailyForecasts'][0]['Temperature']['Maximum']['Value'])
     lowTemp = convertNumberToString(response_json['DailyForecasts'][0]['Temperature']['Minimum']['Value'])
