@@ -345,6 +345,7 @@ def getPollenPostData(queue2, region, partregion):
         logger.info("PollenPostData is: %s", PollenPostData.encode(encoding='utf_8', errors='replace'))
     queue2.put([PollenPostData, PollenPostData_too_long])
 
+
 if __name__=='__main__':
     # Read the account file into a DataRead Object "data".
     try:
